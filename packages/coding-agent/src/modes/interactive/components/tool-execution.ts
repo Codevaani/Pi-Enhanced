@@ -217,7 +217,6 @@ export class ToolExecutionComponent extends Container {
 		if (this.expanded === expanded) return;
 		this.expanded = expanded;
 		this.needsDisplayUpdate = true;
-		this.invalidate();
 	}
 
 	setShowImages(show: boolean): void {
@@ -232,6 +231,7 @@ export class ToolExecutionComponent extends Container {
 
 	override invalidate(): void {
 		super.invalidate();
+		this.updateDisplay();
 	}
 
 	override render(width: number): string[] {
