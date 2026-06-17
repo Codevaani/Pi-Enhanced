@@ -43,7 +43,6 @@ pie  # Start interactive mode
 | `ls` | List directory contents |
 | `todo` | Track multi-step progress with live widget |
 | `web_search` | Search the live web via Exa MCP |
-| `codebase_search` | Search project codebase (ripgrep + optional semantic reranking) |
 
 ## Features
 
@@ -52,8 +51,6 @@ pie  # Start interactive mode
 - **Skills**: Load CLI tools as LLM-accessible skills
 - **Prompt templates**: Reusable prompt snippets
 - **Session management**: Fork, branch, resume, compact conversations
-- **Codebase indexing**: `/indexinit` → background incremental index + `codebase_search` tool
-- **Semantic search**: Embedding-based reranking with `@xenova/transformers` (optional)
 - **Live widgets**: Todo tracker, indexing progress, and more
 - **Keybinding config**: Fully customizable via `~/.pi/keybindings.json`
 

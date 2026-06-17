@@ -46,14 +46,11 @@ pie
 | `ls` | List directory contents |
 | `todo` | Track multi-step progress with live widget above editor |
 | `web_search` | Search the live web via Exa MCP |
-| `codebase_search` | Search project codebase (ripgrep + optional semantic reranking) |
 
 ## Additional Features (Pi Enhanced)
 
 | Feature | Command / Description |
 |---------|----------------------|
-| **Codebase Indexing** | `/indexinit` → background scan, progress bar, auto-watch every 60s |
-| **Semantic Search** | `codebase_search { query, semantic: true }` — embedding-based reranking |
 | **Todo Widget** | Built-in todo tool + `/todo` toggle + live progress widget above editor |
 | **Web Search** | `web_search { query }` — live search via Exa MCP |
 | **Loop Mode** | `/loop` → automatically re-sends your last prompt after each turn |
@@ -71,7 +68,6 @@ pie
 | `/fork` | Create a new session from a previous message |
 | `/compact` | Manually compact context |
 | `/todo` | Toggle the todo widget (enable/disable) |
-| `/indexinit` | Index project codebase (background, non-blocking) |
 | `/loop` | Toggle loop mode (re-sends prompt after each turn) |
 | `/export [file]` | Export session to HTML/JSONL |
 | `/share` | Upload as private GitHub gist |
