@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/Codevaani/Pi-Enhanced">
-    <img alt="pie logo" src="assets/pie.png" width="128">
+    <img alt="pie logo" src="https://raw.githubusercontent.com/Codevaani/Pi-Enhanced/main/assets/pie.png" width="128">
   </a>
 </p>
 
