@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/Codevaani/Pi-Enhanced">
-    <img alt="pie logo" src="https://pi.dev/logo-auto.svg" width="128">
+    <img alt="pie logo" src="assets/logo-auto.svg" width="128">
   </a>
 </p>
 
