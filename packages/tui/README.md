@@ -1,5 +1,7 @@
 # @earendil-works/pi-tui
 
+> Pi Enhanced fork by [@Codevaani](https://github.com/Codevaani)
+
 Minimal terminal UI framework with differential rendering and synchronized output for flicker-free interactive CLI applications.
 
 ## Features
