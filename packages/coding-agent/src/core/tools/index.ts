@@ -10,10 +10,6 @@ export {
 	createLocalBashOperations,
 } from "./bash.ts";
 export {
-	createCodebaseSearchTool,
-	createCodebaseSearchToolDefinition,
-} from "./codebase-search.ts";
-export {
 	createEditTool,
 	createEditToolDefinition,
 	type EditOperations,
@@ -86,7 +82,6 @@ export {
 import type { AgentTool } from "@earendil-works/pi-agent-core";
 import type { ToolDefinition } from "../extensions/types.ts";
 import { type BashToolOptions, createBashTool, createBashToolDefinition } from "./bash.ts";
-import { createCodebaseSearchTool, createCodebaseSearchToolDefinition } from "./codebase-search.ts";
 import { createEditTool, createEditToolDefinition, type EditToolOptions } from "./edit.ts";
 import { createFindTool, createFindToolDefinition, type FindToolOptions } from "./find.ts";
 import { createGrepTool, createGrepToolDefinition, type GrepToolOptions } from "./grep.ts";
@@ -98,17 +93,7 @@ import { createWriteTool, createWriteToolDefinition, type WriteToolOptions } fro
 
 export type Tool = AgentTool<any>;
 export type ToolDef = ToolDefinition<any, any>;
-export type ToolName =
-	| "read"
-	| "bash"
-	| "edit"
-	| "write"
-	| "grep"
-	| "find"
-	| "ls"
-	| "todo"
-	| "web_search"
-	| "codebase_search";
+export type ToolName = "read" | "bash" | "edit" | "write" | "grep" | "find" | "ls" | "todo" | "web_search";
 export const allToolNames: Set<ToolName> = new Set([
 	"read",
 	"bash",
@@ -119,7 +104,6 @@ export const allToolNames: Set<ToolName> = new Set([
 	"ls",
 	"todo",
 	"web_search",
-	"codebase_search",
 ]);
 
 export interface ToolsOptions {
@@ -132,7 +116,6 @@ export interface ToolsOptions {
 	ls?: LsToolOptions;
 	todo?: Record<string, never>;
 	web_search?: Record<string, never>;
-	codebase_search?: Record<string, never>;
 }
 
 export function createToolDefinition(toolName: ToolName, cwd: string, options?: ToolsOptions): ToolDef {
@@ -155,8 +138,6 @@ export function createToolDefinition(toolName: ToolName, cwd: string, options?: 
 			return createTodoToolDefinition();
 		case "web_search":
 			return createWebSearchToolDefinition();
-		case "codebase_search":
-			return createCodebaseSearchToolDefinition(cwd);
 		default:
 			throw new Error(`Unknown tool name: ${toolName}`);
 	}
@@ -182,8 +163,6 @@ export function createTool(toolName: ToolName, cwd: string, options?: ToolsOptio
 			return createTodoTool();
 		case "web_search":
 			return createWebSearchTool();
-		case "codebase_search":
-			return createCodebaseSearchTool(cwd);
 		default:
 			throw new Error(`Unknown tool name: ${toolName}`);
 	}
@@ -218,7 +197,6 @@ export function createAllToolDefinitions(cwd: string, options?: ToolsOptions): R
 		ls: createLsToolDefinition(cwd, options?.ls),
 		todo: createTodoToolDefinition(),
 		web_search: createWebSearchToolDefinition(),
-		codebase_search: createCodebaseSearchToolDefinition(cwd),
 	};
 }
 
@@ -251,6 +229,5 @@ export function createAllTools(cwd: string, options?: ToolsOptions): Record<Tool
 		ls: createLsTool(cwd, options?.ls),
 		todo: createTodoTool(),
 		web_search: createWebSearchTool(),
-		codebase_search: createCodebaseSearchTool(cwd),
 	};
 }

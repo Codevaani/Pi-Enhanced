@@ -13,8 +13,6 @@ const internalPackagePrefix = "@earendil-works/pi-";
 const allowedInstallScriptPackages = new Map([
 	["@google/genai@1.52.0", "preinstall is a no-op in the published package"],
 	["protobufjs@7.5.9", "postinstall only warns about protobufjs version scheme mismatches"],
-	["protobufjs@6.11.6", "postinstall only warns about protobufjs version scheme mismatches"],
-	["sharp@0.32.6", "required by @xenova/transformers for ONNX runtime"],
 ]);
 
 const args = new Set(process.argv.slice(2));

@@ -62,7 +62,6 @@ import {
 } from "../../config.ts";
 import { type AgentSession, type AgentSessionEvent, parseSkillBlock } from "../../core/agent-session.ts";
 import { type AgentSessionRuntime, SessionImportFileNotFoundError } from "../../core/agent-session-runtime.ts";
-import { CodebaseIndexer } from "../../core/codebase-indexer.ts";
 import type {
 	AutocompleteProviderFactory,
 	EditorFactory,
@@ -2725,11 +2724,6 @@ export class InteractiveMode {
 				await this.handleReloadCommand();
 				return;
 			}
-			if (text === "/indexinit") {
-				this.editor.setText("");
-				await this.handleIndexInitCommand();
-				return;
-			}
 			if (text === "/debug") {
 				this.handleDebugCommand();
 				this.editor.setText("");
@@ -5281,139 +5275,8 @@ export class InteractiveMode {
 		}
 	}
 
-	/** Indexing progress widget component. */
-	private indexProgressWidget: (Component & { dispose?(): void }) | undefined;
-	/** Auto-watch timer reference so we can stop it. */
-	private indexWarchTimer: NodeJS.Timeout | undefined;
-
-	private async handleIndexInitCommand(): Promise<void> {
-		if (this.indexProgressWidget) {
-			this.showExtensionNotify("Indexing already in progress", "warning");
-			return;
-		}
-
-		const cwd = this.sessionManager.getCwd();
-		const indexer = new CodebaseIndexer({ projectRoot: cwd });
-
-		// Check if already indexed
-		const stats = indexer.getStats();
-		if (stats.totalFiles > 0) {
-			const options: string[] = ["Re-index", "Re-index (incremental)"];
-			if (this.indexWarchTimer) {
-				options.push("Stop auto-watch");
-			} else {
-				options.push("Start auto-watch");
-			}
-			options.push("Cancel");
-
-			const choice = await this.showExtensionSelector(
-				`Codebase already indexed: ${stats.totalFiles} files (${formatIndexSize(stats.totalSize)})`,
-				options,
-			);
-			if (!choice || choice === "Cancel") return;
-
-			if (choice === "Re-index") {
-				void this.runIndexInBackground(indexer, false);
-				this.showExtensionNotify("Full re-index started in background", "info");
-			} else if (choice === "Re-index (incremental)") {
-				void this.runIndexInBackground(indexer, true);
-				this.showExtensionNotify("Incremental re-index started in background", "info");
-			} else if (choice === "Start auto-watch") {
-				this.indexWarchTimer = indexer.startAutoWatch(60_000);
-				this.showExtensionNotify("Auto-watch started — checking every 60s for file changes", "info");
-			} else if (choice === "Stop auto-watch") {
-				clearInterval(this.indexWarchTimer);
-				this.indexWarchTimer = undefined;
-				this.showExtensionNotify("Auto-watch stopped", "info");
-			}
-			return;
-		}
-
-		// First time — let user confirm
-		const choice = await this.showExtensionSelector(
-			`This will scan all project files once to build a codebase index.\nYou can continue working while indexing runs in the background.\n\nStart indexing?`,
-			["Start indexing", "Cancel"],
-		);
-		if (choice !== "Start indexing") return;
-
-		this.showExtensionNotify("Indexing started in background — showing progress below", "info");
-		void this.runIndexInBackground(indexer, false);
-	}
-
-	private async runIndexInBackground(indexer: CodebaseIndexer, incremental: boolean): Promise<void> {
-		try {
-			this.showIndexProgress(0, 0, "Scanning files...", true);
-
-			const result = incremental
-				? await indexer.batchedIndex(100, (current, total, file) => {
-						this.showIndexProgress(current, total, file, true);
-					})
-				: await indexer.batchedIndex(100, (current, total, file) => {
-						this.showIndexProgress(current, total, file, false);
-					});
-
-			this.hideIndexProgress();
-
-			if (result.totalFiles > 0) {
-				this.showExtensionNotify(
-					`Indexed ${result.totalFiles} files in ${(result.durationMs / 1000).toFixed(1)}s` +
-						(result.errors.length > 0 ? ` (${result.errors.length} errors)` : "") +
-						" · auto-watch every 60s started",
-					result.errors.length > 0 ? "warning" : "info",
-				);
-			}
-
-			// Start auto-watch after initial index completes
-			if (this.indexWarchTimer) {
-				clearInterval(this.indexWarchTimer);
-			}
-			this.indexWarchTimer = indexer.startAutoWatch(60_000);
-		} catch (e: any) {
-			this.hideIndexProgress();
-			this.showExtensionNotify(`Indexing failed: ${e?.message ?? String(e)}`, "error");
-		}
-	}
-
-	private showIndexProgress(current: number, total: number, currentFile: string, _incremental: boolean): void {
-		if (this.indexProgressWidget) {
-			this.widgetContainerBelow.removeChild(this.indexProgressWidget);
-			this.indexProgressWidget.dispose?.();
-			this.indexProgressWidget = undefined;
-		}
-
-		const width = this.ui.terminal.columns;
-		const percent = total > 0 ? Math.round((current / total) * 100) : 0;
-		const barWidth = Math.max(10, width - 12);
-		const filled = Math.round((percent / 100) * barWidth);
-		const bar =
-			theme.fg("accent", "▰".repeat(filled)) + theme.fg("borderMuted", "▱".repeat(Math.max(0, barWidth - filled)));
-
-		const container = new Container();
-		const barLine = `${theme.fg("accent", " Indexing ")}${bar} ${theme.fg(percent >= 100 ? "success" : "accent", `${percent}%`)}`;
-		container.addChild(new Text(barLine, 1, 0));
-
-		const stats = total > 0 ? `${current}/${total} files` : `Scanning... ${current} files`;
-		const fileLabel = currentFile ? `  ${theme.fg("dim", currentFile.slice(-(width - stats.length - 6)))}` : "";
-		container.addChild(new Text(`${theme.fg("muted", stats)}${fileLabel}`, 1, 0));
-		container.addChild(new Spacer(1));
-
-		this.indexProgressWidget = container;
-		this.widgetContainerBelow.addChild(this.indexProgressWidget);
-		this.ui.requestRender();
-	}
-
-	private hideIndexProgress(): void {
-		if (this.indexProgressWidget) {
-			this.widgetContainerBelow.removeChild(this.indexProgressWidget);
-			this.indexProgressWidget.dispose?.();
-			this.indexProgressWidget = undefined;
-			this.ui.requestRender();
-		}
-	}
-
 	private async handleExportCommand(text: string): Promise<void> {
 		const outputPath = this.getPathCommandArgument(text, "/export");
-
 		try {
 			if (outputPath?.endsWith(".jsonl")) {
 				const filePath = this.session.exportToJsonl(outputPath);
@@ -6038,8 +5901,3 @@ function truncateLoopPrompt(prompt: string, maxLength = 60): string {
 }
 
 /** Format byte count to human-readable size. */
-function formatIndexSize(bytes: number): string {
-	if (bytes < 1024) return `${bytes} B`;
-	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
