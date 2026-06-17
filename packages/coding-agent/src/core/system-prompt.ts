@@ -104,13 +104,13 @@ export function buildSystemPrompt(options: BuildSystemPromptOptions): string {
 	};
 
 	const hasBash = tools.includes("bash");
-	const hasGrep = tools.includes("grep");
+	const hasRipgrep = tools.includes("ripgrep");
 	const hasFind = tools.includes("find");
 	const hasLs = tools.includes("ls");
 	const hasRead = tools.includes("read");
 
 	// File exploration guidelines
-	if (hasBash && !hasGrep && !hasFind && !hasLs) {
+	if (hasBash && !hasRipgrep && !hasFind && !hasLs) {
 		addGuideline("Use bash for file operations like ls, rg, find");
 	}
 

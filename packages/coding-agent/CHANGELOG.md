@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Renamed the built-in `grep` tool to `ripgrep` (the tool already used ripgrep under the hood). The `ripgrep` tool is now active by default instead of opt-in. All public API exports, event types, and type guards have been renamed accordingly (e.g., `createGrepTool` → `createRipgrepTool`, `GrepToolInput` → `RipgrepToolInput`, `GrepToolCallEvent` → `RipgrepToolCallEvent`, `isGrepToolResult` → `isRipgrepToolResult`).
+
 ## [0.79.6] - 2026-06-16
 
 ### Fixed

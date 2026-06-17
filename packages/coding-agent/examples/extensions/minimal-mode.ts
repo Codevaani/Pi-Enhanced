@@ -21,9 +21,9 @@ import {
 	createBashTool,
 	createEditTool,
 	createFindTool,
-	createGrepTool,
 	createLsTool,
 	createReadTool,
+	createRipgrepTool,
 	createWriteTool,
 } from "@earendil-works/pi-coding-agent";
 import { Text } from "@earendil-works/pi-tui";
@@ -50,7 +50,7 @@ function createBuiltInTools(cwd: string) {
 		edit: createEditTool(cwd),
 		write: createWriteTool(cwd),
 		find: createFindTool(cwd),
-		grep: createGrepTool(cwd),
+		ripgrep: createRipgrepTool(cwd),
 		ls: createLsTool(cwd),
 	};
 }
@@ -307,18 +307,18 @@ export default function (pi: ExtensionAPI) {
 	});
 
 	// =========================================================================
-	// Grep Tool
+	// Ripgrep Tool
 	// =========================================================================
 	pi.registerTool({
-		name: "grep",
-		label: "grep",
+		name: "ripgrep",
+		label: "ripgrep",
 		description:
 			"Search file contents by regex pattern. Uses ripgrep for fast searching. Output limited to 200 matches.",
-		parameters: getBuiltInTools(process.cwd()).grep.parameters,
+		parameters: getBuiltInTools(process.cwd()).ripgrep.parameters,
 
 		async execute(toolCallId, params, signal, onUpdate, ctx) {
 			const tools = getBuiltInTools(ctx.cwd);
-			return tools.grep.execute(toolCallId, params, signal, onUpdate);
+			return tools.ripgrep.execute(toolCallId, params, signal, onUpdate);
 		},
 
 		renderCall(args, theme, _context) {
@@ -327,7 +327,7 @@ export default function (pi: ExtensionAPI) {
 			const glob = args.glob;
 			const limit = args.limit;
 
-			let text = `${theme.fg("toolTitle", theme.bold("grep"))} ${theme.fg("accent", `/${pattern}/`)}`;
+			let text = `${theme.fg("toolTitle", theme.bold("ripgrep"))} ${theme.fg("accent", `/${pattern}/`)}`;
 			text += theme.fg("toolOutput", ` in ${path}`);
 			if (glob) {
 				text += theme.fg("toolOutput", ` (${glob})`);

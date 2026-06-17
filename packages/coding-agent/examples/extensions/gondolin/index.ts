@@ -27,18 +27,18 @@ import {
 	createBashTool,
 	createEditTool,
 	createFindTool,
-	createGrepTool,
 	createLsTool,
 	createReadTool,
+	createRipgrepTool,
 	createWriteTool,
 	DEFAULT_MAX_BYTES,
 	type EditOperations,
 	type FindOperations,
 	formatSize,
-	type GrepToolDetails,
-	type GrepToolInput,
 	type LsOperations,
 	type ReadOperations,
+	type RipgrepToolDetails,
+	type RipgrepToolInput,
 	truncateHead,
 	truncateLine,
 	type WriteOperations,
@@ -212,7 +212,7 @@ function createLineMatcher(pattern: string, literal: boolean | undefined, ignore
 	return (line: string) => regex.test(line);
 }
 
-function appendGrepBlock(params: {
+function appendRipgrepBlock(params: {
 	outputLines: string[];
 	lines: string[];
 	relativePath: string;
@@ -236,12 +236,12 @@ function appendGrepBlock(params: {
 	return linesTruncated;
 }
 
-async function executeGondolinGrep(
+async function executeGondolinRipgrep(
 	vm: VM,
 	localCwd: string,
-	params: GrepToolInput,
+	params: RipgrepToolInput,
 	signal?: AbortSignal,
-): Promise<TextToolResult<GrepToolDetails>> {
+): Promise<TextToolResult<RipgrepToolDetails>> {
 	const root = toGuestPath(localCwd, params.path ?? ".");
 	const rootStat = await vm.fs.stat(root, { signal });
 	const rootIsDirectory = rootStat.isDirectory();
@@ -249,7 +249,7 @@ async function executeGondolinGrep(
 	const contextLines = params.context && params.context > 0 ? params.context : 0;
 	const effectiveLimit = Math.max(1, params.limit ?? DEFAULT_GREP_LIMIT);
 	const outputLines: string[] = [];
-	const details: GrepToolDetails = {};
+	const details: RipgrepToolDetails = {};
 	let matchCount = 0;
 	let matchLimitReached = false;
 	let linesTruncated = false;
@@ -272,7 +272,7 @@ async function executeGondolinGrep(
 				if (signal?.aborted) throw new Error("Operation aborted");
 				if (!matcher(lines[index] ?? "")) continue;
 				matchCount++;
-				if (appendGrepBlock({ outputLines, lines, relativePath: displayPath, lineIndex: index, contextLines })) {
+				if (appendRipgrepBlock({ outputLines, lines, relativePath: displayPath, lineIndex: index, contextLines })) {
 					linesTruncated = true;
 				}
 				if (matchCount >= effectiveLimit) {
@@ -368,7 +368,7 @@ export default function (pi: ExtensionAPI) {
 	const localWrite = createWriteTool(localCwd);
 	const localEdit = createEditTool(localCwd);
 	const localBash = createBashTool(localCwd);
-	const localGrep = createGrepTool(localCwd);
+	const localRipgrep = createRipgrepTool(localCwd);
 	const localFind = createFindTool(localCwd);
 	const localLs = createLsTool(localCwd);
 
@@ -507,10 +507,10 @@ export default function (pi: ExtensionAPI) {
 	});
 
 	pi.registerTool({
-		...localGrep,
+		...localRipgrep,
 		async execute(_id, params, signal, _onUpdate, ctx) {
 			const activeVm = await ensureVm(ctx);
-			return executeGondolinGrep(activeVm, localCwd, params, signal);
+			return executeGondolinRipgrep(activeVm, localCwd, params, signal);
 		},
 	});
 

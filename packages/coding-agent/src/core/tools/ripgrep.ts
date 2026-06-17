@@ -21,7 +21,7 @@ import {
 	truncateLine,
 } from "./truncate.ts";
 
-const grepSchema = Type.Object({
+const ripgrepSchema = Type.Object({
 	pattern: Type.String({ description: "Search pattern (regex or literal string)" }),
 	path: Type.Optional(Type.String({ description: "Directory or file to search (default: current directory)" })),
 	glob: Type.Optional(Type.String({ description: "Filter files by glob pattern, e.g. '*.ts' or '**/*.spec.ts'" })),
@@ -35,60 +35,60 @@ const grepSchema = Type.Object({
 	limit: Type.Optional(Type.Number({ description: "Maximum number of matches to return (default: 100)" })),
 });
 
-export type GrepToolInput = Static<typeof grepSchema>;
+export type RipgrepToolInput = Static<typeof ripgrepSchema>;
 const DEFAULT_LIMIT = 100;
 
-export interface GrepToolDetails {
+export interface RipgrepToolDetails {
 	truncation?: TruncationResult;
 	matchLimitReached?: number;
 	linesTruncated?: boolean;
 }
 
 /**
- * Pluggable operations for the grep tool.
+ * Pluggable operations for the ripgrep tool.
  * Override these to delegate search to remote systems (for example SSH).
  */
-export interface GrepOperations {
+export interface RipgrepOperations {
 	/** Check if path is a directory. Throws if path does not exist. */
 	isDirectory: (absolutePath: string) => Promise<boolean> | boolean;
 	/** Read file contents for context lines */
 	readFile: (absolutePath: string) => Promise<string> | string;
 }
 
-const defaultGrepOperations: GrepOperations = {
+const defaultRipgrepOperations: RipgrepOperations = {
 	isDirectory: async (p) => (await fsStat(p)).isDirectory(),
 	readFile: (p) => fsReadFile(p, "utf-8"),
 };
 
-export interface GrepToolOptions {
-	/** Custom operations for grep. Default: local filesystem plus ripgrep */
-	operations?: GrepOperations;
+export interface RipgrepToolOptions {
+	/** Custom operations for ripgrep. Default: local filesystem plus ripgrep */
+	operations?: RipgrepOperations;
 }
 
-function formatGrepCall(
+function formatRipgrepCall(
 	args: { pattern: string; path?: string; glob?: string; limit?: number } | undefined,
 	theme: Theme,
 ): string {
 	const pattern = str(args?.pattern);
 	const rawPath = str(args?.path);
-	const path = rawPath !== null ? shortenPath(rawPath || ".") : null;
+	const pathVal = rawPath !== null ? shortenPath(rawPath || ".") : null;
 	const glob = str(args?.glob);
 	const limit = args?.limit;
 	const invalidArg = invalidArgText(theme);
 	let text =
-		theme.fg("toolTitle", theme.bold("grep")) +
+		theme.fg("toolTitle", theme.bold("ripgrep")) +
 		" " +
 		(pattern === null ? invalidArg : theme.fg("accent", `/${pattern || ""}/`)) +
-		theme.fg("toolOutput", ` in ${path === null ? invalidArg : path}`);
+		theme.fg("toolOutput", ` in ${pathVal === null ? invalidArg : pathVal}`);
 	if (glob) text += theme.fg("toolOutput", ` (${glob})`);
 	if (limit !== undefined) text += theme.fg("toolOutput", ` limit ${limit}`);
 	return text;
 }
 
-function formatGrepResult(
+function formatRipgrepResult(
 	result: {
 		content: Array<{ type: string; text?: string; data?: string; mimeType?: string }>;
-		details?: GrepToolDetails;
+		details?: RipgrepToolDetails;
 	},
 	options: ToolRenderResultOptions,
 	theme: Theme,
@@ -120,17 +120,17 @@ function formatGrepResult(
 	return text;
 }
 
-export function createGrepToolDefinition(
+export function createRipgrepToolDefinition(
 	cwd: string,
-	options?: GrepToolOptions,
-): ToolDefinition<typeof grepSchema, GrepToolDetails | undefined> {
+	options?: RipgrepToolOptions,
+): ToolDefinition<typeof ripgrepSchema, RipgrepToolDetails | undefined> {
 	const customOps = options?.operations;
 	return {
-		name: "grep",
-		label: "grep",
+		name: "ripgrep",
+		label: "ripgrep",
 		description: `Search file contents for a pattern. Returns matching lines with file paths and line numbers. Respects .gitignore. Output is truncated to ${DEFAULT_LIMIT} matches or ${DEFAULT_MAX_BYTES / 1024}KB (whichever is hit first). Long lines are truncated to ${GREP_MAX_LINE_LENGTH} chars.`,
 		promptSnippet: "Search file contents for patterns (respects .gitignore)",
-		parameters: grepSchema,
+		parameters: ripgrepSchema,
 		async execute(
 			_toolCallId,
 			{
@@ -176,7 +176,7 @@ export function createGrepToolDefinition(
 						}
 
 						const searchPath = resolveToCwd(searchDir || ".", cwd);
-						const ops = customOps ?? defaultGrepOperations;
+						const ops = customOps ?? defaultRipgrepOperations;
 						let isDirectory: boolean;
 						try {
 							isDirectory = await ops.isDirectory(searchPath);
@@ -258,7 +258,7 @@ export function createGrepToolDefinition(
 								const lineText = lines[current - 1] ?? "";
 								const sanitized = lineText.replace(/\r/g, "");
 								const isMatchLine = current === lineNumber;
-								// Truncate long lines so grep output stays compact.
+								// Truncate long lines so ripgrep output stays compact.
 								const { text: truncatedText, wasTruncated } = truncateLine(sanitized);
 								if (wasTruncated) linesTruncated = true;
 								if (isMatchLine) block.push(`${relativePath}:${current}: ${truncatedText}`);
@@ -334,7 +334,7 @@ export function createGrepToolDefinition(
 							// Apply byte truncation. There is no line limit here because the match limit already capped rows.
 							const truncation = truncateHead(rawOutput, { maxLines: Number.MAX_SAFE_INTEGER });
 							let output = truncation.content;
-							const details: GrepToolDetails = {};
+							const details: RipgrepToolDetails = {};
 							// Build actionable notices for truncation and match limits.
 							const notices: string[] = [];
 							if (matchLimitReached) {
@@ -369,17 +369,17 @@ export function createGrepToolDefinition(
 		},
 		renderCall(args, theme, context) {
 			const text = (context.lastComponent as Text | undefined) ?? new Text("", 0, 0);
-			text.setText(formatGrepCall(args, theme));
+			text.setText(formatRipgrepCall(args, theme));
 			return text;
 		},
 		renderResult(result, options, theme, context) {
 			const text = (context.lastComponent as Text | undefined) ?? new Text("", 0, 0);
-			text.setText(formatGrepResult(result as any, options, theme, context.showImages));
+			text.setText(formatRipgrepResult(result as any, options, theme, context.showImages));
 			return text;
 		},
 	};
 }
 
-export function createGrepTool(cwd: string, options?: GrepToolOptions): AgentTool<typeof grepSchema> {
-	return wrapToolDefinition(createGrepToolDefinition(cwd, options));
+export function createRipgrepTool(cwd: string, options?: RipgrepToolOptions): AgentTool<typeof ripgrepSchema> {
+	return wrapToolDefinition(createRipgrepToolDefinition(cwd, options));
 }

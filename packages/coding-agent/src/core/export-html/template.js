@@ -591,8 +591,8 @@
             const cmd = rawCmd.replace(/[\n\t]/g, ' ').trim().slice(0, 50);
             return `[bash: ${cmd}${rawCmd.length > 50 ? '...' : ''}]`;
           }
-          case 'grep':
-            return `[grep: /${args.pattern || ''}/ in ${shortenPath(String(args.path || '.'))}]`;
+		  case 'ripgrep':
+	            return `[ripgrep: /${args.pattern || ''}/ in ${shortenPath(String(args.path || '.'))}]`;
           case 'find':
             return `[find: ${args.pattern || ''} in ${shortenPath(String(args.path || '.'))}]`;
           case 'ls':

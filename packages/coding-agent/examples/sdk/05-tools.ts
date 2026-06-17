@@ -14,7 +14,7 @@ import { createAgentSession, SessionManager } from "@earendil-works/pi-coding-ag
 
 // Read-only mode (no edit/write)
 const { session: readOnlySession } = await createAgentSession({
-	tools: ["read", "grep", "find", "ls"],
+	tools: ["read", "ripgrep", "find", "ls"],
 	sessionManager: SessionManager.inMemory(),
 });
 console.log("Read-only session created");
@@ -22,7 +22,7 @@ readOnlySession.dispose();
 
 // Custom tool selection
 const { session: customToolsSession } = await createAgentSession({
-	tools: ["read", "bash", "grep"],
+	tools: ["read", "bash", "ripgrep"],
 	sessionManager: SessionManager.inMemory(),
 });
 console.log("Custom tools session created");
@@ -41,7 +41,7 @@ customCwdSession.dispose();
 // Or pick specific tools for custom cwd
 const { session: specificToolsSession } = await createAgentSession({
 	cwd: customCwd,
-	tools: ["read", "bash", "grep"],
+	tools: ["read", "bash", "ripgrep"],
 	sessionManager: SessionManager.inMemory(customCwd),
 });
 console.log("Specific tools with custom cwd session created");

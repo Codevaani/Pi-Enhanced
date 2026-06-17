@@ -9,9 +9,9 @@ import { computeEditsDiff } from "../src/core/tools/edit-diff.ts";
 import {
 	createEditTool,
 	createFindTool,
-	createGrepTool,
 	createLsTool,
 	createReadTool,
+	createRipgrepTool,
 	createWriteTool,
 } from "../src/index.ts";
 import * as shellModule from "../src/utils/shell.ts";
@@ -20,7 +20,7 @@ const readTool = createReadTool(process.cwd());
 const writeTool = createWriteTool(process.cwd());
 const editTool = createEditTool(process.cwd());
 const bashTool = createBashTool(process.cwd());
-const grepTool = createGrepTool(process.cwd());
+const ripgrepTool = createRipgrepTool(process.cwd());
 const findTool = createFindTool(process.cwd());
 const lsTool = createLsTool(process.cwd());
 
@@ -684,12 +684,12 @@ describe("Coding Agent Tools", () => {
 		});
 	});
 
-	describe("grep tool", () => {
+	describe("ripgrep tool", () => {
 		it("should include filename when searching a single file", async () => {
 			const testFile = join(testDir, "example.txt");
 			writeFileSync(testFile, "first line\nmatch line\nlast line");
 
-			const result = await grepTool.execute("test-call-11", {
+			const result = await ripgrepTool.execute("test-call-11", {
 				pattern: "match",
 				path: testFile,
 			});
@@ -703,7 +703,7 @@ describe("Coding Agent Tools", () => {
 			const content = ["before", "match one", "after", "middle", "match two", "after two"].join("\n");
 			writeFileSync(testFile, content);
 
-			const result = await grepTool.execute("test-call-12", {
+			const result = await ripgrepTool.execute("test-call-12", {
 				pattern: "match",
 				path: testFile,
 				limit: 1,
@@ -727,7 +727,7 @@ describe("Coding Agent Tools", () => {
 			chmodSync(payload, 0o755);
 			writeFileSync(testFile, "target\n");
 
-			const result = await grepTool.execute("test-call-grep-injection", {
+			const result = await ripgrepTool.execute("test-call-grep-injection", {
 				pattern: `--pre=${payload}`,
 				path: testDir,
 			});

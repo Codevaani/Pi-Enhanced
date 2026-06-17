@@ -481,12 +481,12 @@ import { createAgentSession } from "@earendil-works/pi-coding-agent";
 
 // Read-only mode
 const { session } = await createAgentSession({
-  tools: ["read", "grep", "find", "ls"],
+  tools: ["read", "ripgrep", "find", "ls"],
 });
 
 // Pick specific tools
 const { session } = await createAgentSession({
-  tools: ["read", "bash", "grep"],
+  tools: ["read", "bash", "ripgrep"],
 });
 
 // Disable one tool while keeping the rest available
@@ -513,7 +513,7 @@ const { session } = await createAgentSession({
 // Or pick specific tools for custom cwd
 const { session } = await createAgentSession({
   cwd,
-  tools: ["read", "bash", "grep"],
+  tools: ["read", "bash", "ripgrep"],
   sessionManager: SessionManager.inMemory(cwd),
 });
 ```
@@ -1126,7 +1126,7 @@ SettingsManager
 createCodingTools
 createReadOnlyTools
 createReadTool, createBashTool, createEditTool, createWriteTool
-createGrepTool, createFindTool, createLsTool
+createRipgrepTool, createFindTool, createLsTool
 
 // Types
 type CreateAgentSessionOptions

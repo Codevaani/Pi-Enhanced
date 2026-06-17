@@ -79,8 +79,6 @@ export type {
 	GetAllToolsHandler,
 	GetCommandsHandler,
 	GetThinkingLevelHandler,
-	GrepToolCallEvent,
-	GrepToolResultEvent,
 	// Events - Input
 	InputEvent,
 	InputEventResult,
@@ -116,6 +114,8 @@ export type {
 	// Events - Resources
 	ResourcesDiscoverEvent,
 	ResourcesDiscoverResult,
+	RipgrepToolCallEvent,
+	RipgrepToolResultEvent,
 	SendMessageHandler,
 	SendUserMessageHandler,
 	SessionBeforeCompactEvent,
@@ -169,9 +169,9 @@ export {
 	isBashToolResult,
 	isEditToolResult,
 	isFindToolResult,
-	isGrepToolResult,
 	isLsToolResult,
 	isReadToolResult,
+	isRipgrepToolResult,
 	isToolCallEventType,
 	isWriteToolResult,
 } from "./types.ts";

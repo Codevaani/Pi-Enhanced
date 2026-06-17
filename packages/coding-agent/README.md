@@ -41,7 +41,7 @@ pie
 | `bash` | Execute shell commands |
 | `edit` | Edit files with diff |
 | `write` | Create or overwrite files |
-| `grep` | Search file contents |
+| `ripgrep` | Search file contents |
 | `find` | Find files by path |
 | `ls` | List directory contents |
 | `todo` | Track multi-step progress with live widget above editor |
