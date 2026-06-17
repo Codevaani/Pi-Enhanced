@@ -106,14 +106,15 @@ export function createCodebaseSearchToolDefinition(
 		name: "codebase_search",
 		label: "codebase_search",
 		description:
-			`Search the project codebase. Uses ripgrep for fast keyword search. ` +
-			`Set semantic:true to enable embedding-based reranking (loads ~25MB model on first use). ` +
-			`Use path_filter to narrow to specific directories.`,
-		promptSnippet: "Search project codebase for code/patterns",
+			`ALWAYS use codebase_search before answering ANY question about the project codebase. ` +
+			`Do NOT rely on training data — the project may have changed. ` +
+			`Searches the project. Supports glob filters and optional semantic reranking.`,
+		promptSnippet: "ALWAYS search codebase for code questions — do NOT rely on memory",
 		promptGuidelines: [
-			"Use codebase_search when you need to find code patterns, function implementations, or where something is used in the project.",
-			"Use semantic:true for natural language queries like 'login authentication handler' instead of exact keywords.",
-			"Use path_filter to narrow search to specific directories (e.g. 'src/**/*.ts').",
+			"CRITICAL: For ANY question about project code, ALWAYS start with codebase_search. Do NOT answer from training data.",
+			"If you need to understand code structure, call codebase_search first, then read the relevant files.",
+			"Use semantic:true for natural language queries like 'authentication' or 'error handling'.",
+			"Use path_filter to narrow to specific directories (e.g. 'src/**/*.ts').",
 		],
 		parameters: codebaseSearchSchema,
 		async execute(

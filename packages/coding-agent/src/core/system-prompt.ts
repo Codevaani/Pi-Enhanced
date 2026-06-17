@@ -114,6 +114,11 @@ export function buildSystemPrompt(options: BuildSystemPromptOptions): string {
 		addGuideline("Use bash for file operations like ls, rg, find");
 	}
 
+	// General tool usage mandate
+	addGuideline(
+		"CRITICAL: You MUST use available tools (codebase_search, read, grep, find, ls) to gather information about this project. Do NOT answer from training data alone — the project may have been modified.",
+	);
+
 	for (const guideline of promptGuidelines ?? []) {
 		const normalized = guideline.trim();
 		if (normalized.length > 0) {
