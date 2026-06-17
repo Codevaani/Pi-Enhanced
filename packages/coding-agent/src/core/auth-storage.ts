@@ -393,6 +393,8 @@ export class AuthStorage {
 
 	/**
 	 * Login to an OAuth provider.
+	 *
+	 * TODO: fix login — handle token expiry gracefully, surface error from provider.login() instead of generic error.
 	 */
 	async login(providerId: OAuthProviderId, callbacks: OAuthLoginCallbacks): Promise<void> {
 		const provider = getOAuthProvider(providerId);

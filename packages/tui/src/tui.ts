@@ -1242,24 +1242,26 @@ export class TUI extends Container {
 				buffer += this.deleteKittyImages(this.previousKittyImageIds);
 				buffer += "\x1b[2J\x1b[H\x1b[3J"; // Clear screen, home, then clear scrollback
 			}
+			const parts: string[] = [buffer];
 			for (let i = 0; i < newLines.length; i++) {
-				if (i > 0) buffer += "\r\n";
 				const line = newLines[i];
 				const isImage = isImageLine(line);
 				const imageReservedRows = isImage ? this.getKittyImageReservedRows(newLines, i) : 1;
+				if (i > 0) parts.push("\r\n");
 				if (imageReservedRows > 1 && imageReservedRows <= height) {
 					for (let row = 1; row < imageReservedRows; row++) {
-						buffer += "\r\n";
+						parts.push("\r\n");
 					}
-					buffer += `\x1b[${imageReservedRows - 1}A`;
-					buffer += line;
-					buffer += `\x1b[${imageReservedRows - 1}B`;
+					parts.push(`\x1b[${imageReservedRows - 1}A`);
+					parts.push(line);
+					parts.push(`\x1b[${imageReservedRows - 1}B`);
 					i += imageReservedRows - 1;
 					continue;
 				}
-				buffer += line;
+				parts.push(line);
 			}
-			buffer += "\x1b[?2026l"; // End synchronized output
+			parts.push("\x1b[?2026l"); // End synchronized output
+			buffer = parts.join("");
 			this.terminal.write(buffer);
 			this.cursorRow = Math.max(0, newLines.length - 1);
 			this.hardwareCursorRow = this.cursorRow;

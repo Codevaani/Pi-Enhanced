@@ -8,6 +8,8 @@ import { AuthStorage } from "../src/core/auth-storage.ts";
 import { clearConfigValueCache } from "../src/core/resolve-config-value.ts";
 
 describe("AuthStorage", () => {
+	// TODO: update tests — add coverage for token refresh race conditions, expired tokens, and multi-instance scenarios.
+
 	let tempDir: string;
 	let authJsonPath: string;
 	let authStorage: AuthStorage;

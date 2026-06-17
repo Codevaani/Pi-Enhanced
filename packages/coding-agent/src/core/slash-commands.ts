@@ -26,6 +26,8 @@ export const BUILTIN_SLASH_COMMANDS: ReadonlyArray<BuiltinSlashCommand> = [
 	{ name: "name", description: "Set session display name" },
 	{ name: "session", description: "Show session info and stats" },
 	{ name: "changelog", description: "Show changelog entries" },
+	{ name: "todo", description: "Toggle the todo widget (enable / disable)" },
+	{ name: "loop", description: "Toggle loop mode (re-sends your last prompt after each turn)" },
 	{ name: "hotkeys", description: "Show all keyboard shortcuts" },
 	{ name: "fork", description: "Create a new fork from a previous user message" },
 	{ name: "clone", description: "Duplicate the current session at the current position" },
@@ -37,5 +39,6 @@ export const BUILTIN_SLASH_COMMANDS: ReadonlyArray<BuiltinSlashCommand> = [
 	{ name: "compact", description: "Manually compact the session context" },
 	{ name: "resume", description: "Resume a different session" },
 	{ name: "reload", description: "Reload keybindings, extensions, skills, prompts, and themes" },
+	{ name: "indexinit", description: "Index project codebase for faster search (background, non-blocking)" },
 	{ name: "quit", description: `Quit ${APP_NAME}` },
 ];

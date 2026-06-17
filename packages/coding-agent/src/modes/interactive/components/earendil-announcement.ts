@@ -4,7 +4,7 @@ import { getBundledInteractiveAssetPath } from "../../../config.ts";
 import { theme } from "../theme/theme.ts";
 import { DynamicBorder } from "./dynamic-border.ts";
 
-const BLOG_URL = "https://mariozechner.at/posts/2026-04-08-ive-sold-out/";
+const BLOG_URL = "";
 const IMAGE_FILENAME = "clankolas.png";
 
 let cachedImageBase64: string | undefined;

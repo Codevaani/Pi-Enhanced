@@ -34,6 +34,7 @@ function defaultConvertToLlm(messages: AgentMessage[]): Message[] {
 	);
 }
 
+// TODO: refactor api — consolidate API field usage into a typed model config object instead of passing raw string around.
 const EMPTY_USAGE = {
 	input: 0,
 	output: 0,

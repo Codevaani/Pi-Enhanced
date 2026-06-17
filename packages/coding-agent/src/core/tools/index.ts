@@ -10,6 +10,10 @@ export {
 	createLocalBashOperations,
 } from "./bash.ts";
 export {
+	createCodebaseSearchTool,
+	createCodebaseSearchToolDefinition,
+} from "./codebase-search.ts";
+export {
 	createEditTool,
 	createEditToolDefinition,
 	type EditOperations,
@@ -51,6 +55,17 @@ export {
 	type ReadToolOptions,
 } from "./read.ts";
 export {
+	createTodoTool,
+	createTodoToolDefinition,
+	getTodos,
+	isTodoWidgetEnabled,
+	resetState,
+	setTodoWidgetEnabled,
+	type TodoDetails,
+	type TodoInput,
+	type TodoItem,
+} from "./todo.ts";
+export {
 	DEFAULT_MAX_BYTES,
 	DEFAULT_MAX_LINES,
 	formatSize,
@@ -71,17 +86,41 @@ export {
 import type { AgentTool } from "@earendil-works/pi-agent-core";
 import type { ToolDefinition } from "../extensions/types.ts";
 import { type BashToolOptions, createBashTool, createBashToolDefinition } from "./bash.ts";
+import { createCodebaseSearchTool, createCodebaseSearchToolDefinition } from "./codebase-search.ts";
 import { createEditTool, createEditToolDefinition, type EditToolOptions } from "./edit.ts";
 import { createFindTool, createFindToolDefinition, type FindToolOptions } from "./find.ts";
 import { createGrepTool, createGrepToolDefinition, type GrepToolOptions } from "./grep.ts";
 import { createLsTool, createLsToolDefinition, type LsToolOptions } from "./ls.ts";
 import { createReadTool, createReadToolDefinition, type ReadToolOptions } from "./read.ts";
+import { createTodoTool, createTodoToolDefinition } from "./todo.ts";
+import { createWebSearchTool, createWebSearchToolDefinition } from "./web-search.ts";
 import { createWriteTool, createWriteToolDefinition, type WriteToolOptions } from "./write.ts";
 
 export type Tool = AgentTool<any>;
 export type ToolDef = ToolDefinition<any, any>;
-export type ToolName = "read" | "bash" | "edit" | "write" | "grep" | "find" | "ls";
-export const allToolNames: Set<ToolName> = new Set(["read", "bash", "edit", "write", "grep", "find", "ls"]);
+export type ToolName =
+	| "read"
+	| "bash"
+	| "edit"
+	| "write"
+	| "grep"
+	| "find"
+	| "ls"
+	| "todo"
+	| "web_search"
+	| "codebase_search";
+export const allToolNames: Set<ToolName> = new Set([
+	"read",
+	"bash",
+	"edit",
+	"write",
+	"grep",
+	"find",
+	"ls",
+	"todo",
+	"web_search",
+	"codebase_search",
+]);
 
 export interface ToolsOptions {
 	read?: ReadToolOptions;
@@ -91,6 +130,9 @@ export interface ToolsOptions {
 	grep?: GrepToolOptions;
 	find?: FindToolOptions;
 	ls?: LsToolOptions;
+	todo?: Record<string, never>;
+	web_search?: Record<string, never>;
+	codebase_search?: Record<string, never>;
 }
 
 export function createToolDefinition(toolName: ToolName, cwd: string, options?: ToolsOptions): ToolDef {
@@ -109,6 +151,12 @@ export function createToolDefinition(toolName: ToolName, cwd: string, options?: 
 			return createFindToolDefinition(cwd, options?.find);
 		case "ls":
 			return createLsToolDefinition(cwd, options?.ls);
+		case "todo":
+			return createTodoToolDefinition();
+		case "web_search":
+			return createWebSearchToolDefinition();
+		case "codebase_search":
+			return createCodebaseSearchToolDefinition(cwd);
 		default:
 			throw new Error(`Unknown tool name: ${toolName}`);
 	}
@@ -130,6 +178,12 @@ export function createTool(toolName: ToolName, cwd: string, options?: ToolsOptio
 			return createFindTool(cwd, options?.find);
 		case "ls":
 			return createLsTool(cwd, options?.ls);
+		case "todo":
+			return createTodoTool();
+		case "web_search":
+			return createWebSearchTool();
+		case "codebase_search":
+			return createCodebaseSearchTool(cwd);
 		default:
 			throw new Error(`Unknown tool name: ${toolName}`);
 	}
@@ -162,6 +216,9 @@ export function createAllToolDefinitions(cwd: string, options?: ToolsOptions): R
 		grep: createGrepToolDefinition(cwd, options?.grep),
 		find: createFindToolDefinition(cwd, options?.find),
 		ls: createLsToolDefinition(cwd, options?.ls),
+		todo: createTodoToolDefinition(),
+		web_search: createWebSearchToolDefinition(),
+		codebase_search: createCodebaseSearchToolDefinition(cwd),
 	};
 }
 
@@ -192,5 +249,8 @@ export function createAllTools(cwd: string, options?: ToolsOptions): Record<Tool
 		grep: createGrepTool(cwd, options?.grep),
 		find: createFindTool(cwd, options?.find),
 		ls: createLsTool(cwd, options?.ls),
+		todo: createTodoTool(),
+		web_search: createWebSearchTool(),
+		codebase_search: createCodebaseSearchTool(cwd),
 	};
 }

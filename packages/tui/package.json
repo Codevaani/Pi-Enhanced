@@ -25,11 +25,11 @@
 		"typescript",
 		"cli"
 	],
-	"author": "Mario Zechner",
+	"author": "Codevaani",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/earendil-works/pi.git",
+		"url": "git+https://github.com/Codevaani/Pi-Enhanced.git",
 		"directory": "packages/tui"
 	},
 	"engines": {

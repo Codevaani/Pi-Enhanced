@@ -5,6 +5,18 @@ import { getTextOutput as getRenderedTextOutput } from "../../../core/tools/rend
 import { convertToPng } from "../../../utils/image-convert.ts";
 import { theme } from "../theme/theme.ts";
 
+function resultDataVersion(
+	result: { content: Array<{ type: string; text?: string; data?: string; mimeType?: string }> } | undefined,
+): number {
+	if (!result?.content) return 0;
+	let hash = 0;
+	for (const c of result.content) {
+		hash = ((hash << 5) - hash + c.type.length) | 0;
+		if (c.text) hash = ((hash << 5) - hash + c.text.length) | 0;
+	}
+	return hash;
+}
+
 export interface ToolExecutionOptions {
 	showImages?: boolean;
 	imageWidthCells?: number;
@@ -39,6 +51,9 @@ export class ToolExecutionComponent extends Container {
 	};
 	private convertedImages: Map<number, { data: string; mimeType: string }> = new Map();
 	private hideComponent = false;
+	private cachedFormattedText = "";
+	private lastFormattedTextResultVersion = 0;
+	private needsDisplayUpdate = false;
 
 	constructor(
 		toolName: string,
@@ -199,8 +214,10 @@ export class ToolExecutionComponent extends Container {
 	}
 
 	setExpanded(expanded: boolean): void {
+		if (this.expanded === expanded) return;
 		this.expanded = expanded;
-		this.updateDisplay();
+		this.needsDisplayUpdate = true;
+		this.invalidate();
 	}
 
 	setShowImages(show: boolean): void {
@@ -215,11 +232,16 @@ export class ToolExecutionComponent extends Container {
 
 	override invalidate(): void {
 		super.invalidate();
-		this.updateDisplay();
 	}
 
 	override render(width: number): string[] {
-		if (this.hideComponent) {
+		if (this.needsDisplayUpdate) {
+			this.needsDisplayUpdate = false;
+			this.updateDisplay();
+		}
+		// Tools whose renderers always return empty content (e.g. todo) must not
+		// leave behind the leading Spacer(1) added in the constructor.
+		if (this.hideComponent || this.toolName === "todo") {
 			return [];
 		}
 
@@ -363,6 +385,10 @@ export class ToolExecutionComponent extends Container {
 	}
 
 	private formatToolExecution(): string {
+		const currentVersion = resultDataVersion(this.result);
+		if (this.cachedFormattedText && currentVersion === this.lastFormattedTextResultVersion) {
+			return this.cachedFormattedText;
+		}
 		let text = theme.fg("toolTitle", theme.bold(this.toolName));
 		const content = JSON.stringify(this.args, null, 2);
 		if (content) {
@@ -372,6 +398,8 @@ export class ToolExecutionComponent extends Container {
 		if (output) {
 			text += `\n${output}`;
 		}
+		this.cachedFormattedText = text;
+		this.lastFormattedTextResultVersion = currentVersion;
 		return text;
 	}
 }

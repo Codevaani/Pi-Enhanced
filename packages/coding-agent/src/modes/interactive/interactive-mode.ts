@@ -45,6 +45,7 @@ import {
 	Text,
 	TruncatedText,
 	TUI,
+	truncateToWidth,
 	visibleWidth,
 } from "@earendil-works/pi-tui";
 import chalk from "chalk";
@@ -61,6 +62,7 @@ import {
 } from "../../config.ts";
 import { type AgentSession, type AgentSessionEvent, parseSkillBlock } from "../../core/agent-session.ts";
 import { type AgentSessionRuntime, SessionImportFileNotFoundError } from "../../core/agent-session-runtime.ts";
+import { CodebaseIndexer } from "../../core/codebase-indexer.ts";
 import type {
 	AutocompleteProviderFactory,
 	EditorFactory,
@@ -85,6 +87,7 @@ import { type SessionContext, SessionManager } from "../../core/session-manager.
 import { BUILTIN_SLASH_COMMANDS } from "../../core/slash-commands.ts";
 import type { SourceInfo } from "../../core/source-info.ts";
 import { isInstallTelemetryEnabled } from "../../core/telemetry.ts";
+import { getTodos, isTodoWidgetEnabled, setTodoWidgetEnabled } from "../../core/tools/todo.ts";
 import type { TruncationResult } from "../../core/tools/truncate.ts";
 import { hasTrustRequiringProjectResources, ProjectTrustStore } from "../../core/trust-manager.ts";
 import { getChangelogPath, getNewEntries, normalizeChangelogLinks, parseChangelog } from "../../utils/changelog.ts";
@@ -286,6 +289,8 @@ export class InteractiveMode {
 	private pendingUserInputs: string[] = [];
 	private loadingAnimation: Loader | undefined = undefined;
 	private workingMessage: string | undefined = undefined;
+	private loopEnabled = false;
+	private loopPrompt = "";
 	private workingVisible = true;
 	private workingIndicatorOptions: LoaderIndicatorOptions | undefined = undefined;
 	private readonly defaultWorkingMessage = "Working...";
@@ -355,6 +360,7 @@ export class InteractiveMode {
 	// Extension widgets (components rendered above/below the editor)
 	private extensionWidgetsAbove = new Map<string, Component & { dispose?(): void }>();
 	private extensionWidgetsBelow = new Map<string, Component & { dispose?(): void }>();
+	private todoWidgetComponent: (Component & { dispose?(): void }) | undefined;
 	private widgetContainerAbove!: Container;
 	private widgetContainerBelow!: Container;
 
@@ -1898,6 +1904,7 @@ export class InteractiveMode {
 	private renderWidgets(): void {
 		if (!this.widgetContainerAbove || !this.widgetContainerBelow) return;
 		this.renderWidgetContainer(this.widgetContainerAbove, this.extensionWidgetsAbove, true, true);
+		this.renderTodoWidget();
 		this.renderWidgetContainer(this.widgetContainerBelow, this.extensionWidgetsBelow, false, false);
 		this.ui.requestRender();
 	}
@@ -1923,6 +1930,68 @@ export class InteractiveMode {
 		for (const component of widgets.values()) {
 			container.addChild(component);
 		}
+	}
+
+	/**
+	 * Render the built-in todo widget (if there are items) above the editor.
+	 *
+	 * Display style (matches Claude Code):
+	 *   ● N tasks (X done, Y in progress, Z open)
+	 *   ✔ #1 strikethrough subject
+	 *   ◼ #2 active subject
+	 *   ◻ #3 pending subject
+	 *     … and K more
+	 */
+	private renderTodoWidget(): void {
+		if (this.todoWidgetComponent) {
+			this.widgetContainerAbove.removeChild(this.todoWidgetComponent);
+			this.todoWidgetComponent.dispose?.();
+			this.todoWidgetComponent = undefined;
+		}
+
+		if (!isTodoWidgetEnabled()) return;
+
+		const todos = getTodos();
+		if (todos.length === 0) return;
+
+		const width = this.ui.terminal.columns;
+		const total = todos.length;
+		const doneCount = todos.filter((t) => t.done).length;
+		const pendingCount = total - doneCount;
+
+		// Build header: ● N tasks (X done, Y open)
+		const statusParts: string[] = [];
+		if (doneCount > 0) statusParts.push(`${doneCount} done`);
+		if (pendingCount > 0) statusParts.push(`${pendingCount} open`);
+		const statusText = `${total} tasks (${statusParts.join(", ")})`;
+
+		const headerLine = `${theme.fg("accent", "●")} ${theme.fg("accent", statusText)}`;
+
+		// Build per-task lines
+		const taskLines: string[] = [];
+		for (const t of todos) {
+			let icon: string;
+			let text: string;
+			if (t.done) {
+				icon = theme.fg("success", "✔");
+				const subject = `#${t.id} ${t.text}`;
+				text = `  ${icon} ${theme.fg("dim", theme.strikethrough(subject))}`;
+			} else {
+				icon = theme.fg("muted", "◻");
+				text = `  ${icon} ${theme.fg("dim", `#${t.id}`)} ${t.text}`;
+			}
+			taskLines.push(truncateToWidth(text, width));
+		}
+
+		const container = new Container();
+		container.addChild(new Spacer(1));
+		container.addChild(new Text(truncateToWidth(headerLine, width), 1, 0));
+		for (const line of taskLines) {
+			container.addChild(new Text(line, 1, 0));
+		}
+		container.addChild(new Spacer(1));
+		this.todoWidgetComponent = container;
+		this.widgetContainerAbove.addChild(this.todoWidgetComponent);
 	}
 
 	/**
@@ -2549,6 +2618,16 @@ export class InteractiveMode {
 				this.editor.setText("");
 				return;
 			}
+			if (text === "/todo") {
+				this.editor.setText("");
+				await this.handleTodoCommand();
+				return;
+			}
+			if (text === "/loop") {
+				this.editor.setText("");
+				await this.handleLoopCommand();
+				return;
+			}
 			if (text === "/scoped-models") {
 				this.editor.setText("");
 				await this.showModelsSelector();
@@ -2646,6 +2725,11 @@ export class InteractiveMode {
 				await this.handleReloadCommand();
 				return;
 			}
+			if (text === "/indexinit") {
+				this.editor.setText("");
+				await this.handleIndexInitCommand();
+				return;
+			}
 			if (text === "/debug") {
 				this.handleDebugCommand();
 				this.editor.setText("");
@@ -2716,6 +2800,11 @@ export class InteractiveMode {
 			// Normal message submission
 			// First, move any pending bash components to chat
 			this.flushPendingBashComponents();
+
+			// Remember the prompt so /loop can re-send it after each turn
+			if (this.loopEnabled) {
+				this.loopPrompt = text;
+			}
 
 			if (this.onInputCallback) {
 				this.onInputCallback(text);
@@ -2913,6 +3002,9 @@ export class InteractiveMode {
 			}
 
 			case "tool_execution_end": {
+				if (event.toolName === "todo") {
+					this.renderWidgets();
+				}
 				const component = this.pendingTools.get(event.toolCallId);
 				if (component) {
 					component.updateResult({ ...event.result, isError: event.isError });
@@ -2939,6 +3031,16 @@ export class InteractiveMode {
 				this.pendingTools.clear();
 
 				await this.checkShutdownRequested();
+
+				// Loop mode: re-send the saved prompt after each turn completes
+				if (this.loopEnabled && this.loopPrompt && !this.isShuttingDown) {
+					const nextPrompt = this.loopPrompt;
+					void this.session.prompt(nextPrompt, { streamingBehavior: "followUp" }).catch((error) => {
+						this.loopEnabled = false;
+						const message = error instanceof Error ? error.message : String(error);
+						this.showExtensionNotify(`Loop stopped: ${message}`, "error");
+					});
+				}
 
 				this.ui.requestRender();
 				break;
@@ -5146,6 +5248,169 @@ export class InteractiveMode {
 		}
 	}
 
+	private async handleTodoCommand(): Promise<void> {
+		const currentState = isTodoWidgetEnabled();
+		const choice = await this.showExtensionSelector(
+			`Todo widget is currently: ${currentState ? "enabled" : "disabled"}\nSelect an option:`,
+			[currentState ? "Disable" : "Enable", "Cancel"],
+		);
+		if (choice === "Disable") {
+			setTodoWidgetEnabled(false);
+			this.renderWidgets();
+		} else if (choice === "Enable") {
+			setTodoWidgetEnabled(true);
+			this.renderWidgets();
+		}
+	}
+
+	private async handleLoopCommand(): Promise<void> {
+		const choice = await this.showExtensionSelector(
+			`Loop mode is currently: ${this.loopEnabled ? "enabled" : "disabled"}\nSelect an option:`,
+			[this.loopEnabled ? "Disable" : "Enable", "Cancel"],
+		);
+		if (choice === "Enable") {
+			this.loopEnabled = true;
+			if (this.loopPrompt) {
+				this.showExtensionNotify(`Loop enabled — will repeat: "${truncateLoopPrompt(this.loopPrompt)}"`, "info");
+			} else {
+				this.showExtensionNotify("Loop enabled — your next prompt will repeat after each turn", "info");
+			}
+		} else if (choice === "Disable") {
+			this.loopEnabled = false;
+			this.showExtensionNotify("Loop disabled", "info");
+		}
+	}
+
+	/** Indexing progress widget component. */
+	private indexProgressWidget: (Component & { dispose?(): void }) | undefined;
+	/** Auto-watch timer reference so we can stop it. */
+	private indexWarchTimer: NodeJS.Timeout | undefined;
+
+	private async handleIndexInitCommand(): Promise<void> {
+		if (this.indexProgressWidget) {
+			this.showExtensionNotify("Indexing already in progress", "warning");
+			return;
+		}
+
+		const cwd = this.sessionManager.getCwd();
+		const indexer = new CodebaseIndexer({ projectRoot: cwd });
+
+		// Check if already indexed
+		const stats = indexer.getStats();
+		if (stats.totalFiles > 0) {
+			const options: string[] = ["Re-index", "Re-index (incremental)"];
+			if (this.indexWarchTimer) {
+				options.push("Stop auto-watch");
+			} else {
+				options.push("Start auto-watch");
+			}
+			options.push("Cancel");
+
+			const choice = await this.showExtensionSelector(
+				`Codebase already indexed: ${stats.totalFiles} files (${formatIndexSize(stats.totalSize)})`,
+				options,
+			);
+			if (!choice || choice === "Cancel") return;
+
+			if (choice === "Re-index") {
+				void this.runIndexInBackground(indexer, false);
+				this.showExtensionNotify("Full re-index started in background", "info");
+			} else if (choice === "Re-index (incremental)") {
+				void this.runIndexInBackground(indexer, true);
+				this.showExtensionNotify("Incremental re-index started in background", "info");
+			} else if (choice === "Start auto-watch") {
+				this.indexWarchTimer = indexer.startAutoWatch(60_000);
+				this.showExtensionNotify("Auto-watch started — checking every 60s for file changes", "info");
+			} else if (choice === "Stop auto-watch") {
+				clearInterval(this.indexWarchTimer);
+				this.indexWarchTimer = undefined;
+				this.showExtensionNotify("Auto-watch stopped", "info");
+			}
+			return;
+		}
+
+		// First time — let user confirm
+		const choice = await this.showExtensionSelector(
+			`This will scan all project files once to build a codebase index.\nYou can continue working while indexing runs in the background.\n\nStart indexing?`,
+			["Start indexing", "Cancel"],
+		);
+		if (choice !== "Start indexing") return;
+
+		this.showExtensionNotify("Indexing started in background — showing progress below", "info");
+		void this.runIndexInBackground(indexer, false);
+	}
+
+	private async runIndexInBackground(indexer: CodebaseIndexer, incremental: boolean): Promise<void> {
+		try {
+			this.showIndexProgress(0, 0, "Scanning files...", true);
+
+			const result = incremental
+				? await indexer.batchedIndex(100, (current, total, file) => {
+						this.showIndexProgress(current, total, file, true);
+					})
+				: await indexer.batchedIndex(100, (current, total, file) => {
+						this.showIndexProgress(current, total, file, false);
+					});
+
+			this.hideIndexProgress();
+
+			if (result.totalFiles > 0) {
+				this.showExtensionNotify(
+					`Indexed ${result.totalFiles} files in ${(result.durationMs / 1000).toFixed(1)}s` +
+						(result.errors.length > 0 ? ` (${result.errors.length} errors)` : "") +
+						" · auto-watch every 60s started",
+					result.errors.length > 0 ? "warning" : "info",
+				);
+			}
+
+			// Start auto-watch after initial index completes
+			if (this.indexWarchTimer) {
+				clearInterval(this.indexWarchTimer);
+			}
+			this.indexWarchTimer = indexer.startAutoWatch(60_000);
+		} catch (e: any) {
+			this.hideIndexProgress();
+			this.showExtensionNotify(`Indexing failed: ${e?.message ?? String(e)}`, "error");
+		}
+	}
+
+	private showIndexProgress(current: number, total: number, currentFile: string, _incremental: boolean): void {
+		if (this.indexProgressWidget) {
+			this.widgetContainerBelow.removeChild(this.indexProgressWidget);
+			this.indexProgressWidget.dispose?.();
+			this.indexProgressWidget = undefined;
+		}
+
+		const width = this.ui.terminal.columns;
+		const percent = total > 0 ? Math.round((current / total) * 100) : 0;
+		const barWidth = Math.max(10, width - 12);
+		const filled = Math.round((percent / 100) * barWidth);
+		const bar =
+			theme.fg("accent", "▰".repeat(filled)) + theme.fg("borderMuted", "▱".repeat(Math.max(0, barWidth - filled)));
+
+		const container = new Container();
+		const barLine = `${theme.fg("accent", " Indexing ")}${bar} ${theme.fg(percent >= 100 ? "success" : "accent", `${percent}%`)}`;
+		container.addChild(new Text(barLine, 1, 0));
+
+		const stats = total > 0 ? `${current}/${total} files` : `Scanning... ${current} files`;
+		const fileLabel = currentFile ? `  ${theme.fg("dim", currentFile.slice(-(width - stats.length - 6)))}` : "";
+		container.addChild(new Text(`${theme.fg("muted", stats)}${fileLabel}`, 1, 0));
+		container.addChild(new Spacer(1));
+
+		this.indexProgressWidget = container;
+		this.widgetContainerBelow.addChild(this.indexProgressWidget);
+		this.ui.requestRender();
+	}
+
+	private hideIndexProgress(): void {
+		if (this.indexProgressWidget) {
+			this.widgetContainerBelow.removeChild(this.indexProgressWidget);
+			this.indexProgressWidget.dispose?.();
+			this.indexProgressWidget = undefined;
+			this.ui.requestRender();
+		}
+	}
+
 	private async handleExportCommand(text: string): Promise<void> {
 		const outputPath = this.getPathCommandArgument(text, "/export");
 
@@ -5763,4 +6028,18 @@ export class InteractiveMode {
 		}
 		this.unregisterSignalHandlers();
 	}
+}
+
+/** Truncate a loop prompt for display in the toast notification. */
+function truncateLoopPrompt(prompt: string, maxLength = 60): string {
+	const single = prompt.replace(/\s+/g, " ").trim();
+	if (single.length <= maxLength) return single;
+	return `${single.slice(0, maxLength - 1)}…`;
+}
+
+/** Format byte count to human-readable size. */
+function formatIndexSize(bytes: number): string {
+	if (bytes < 1024) return `${bytes} B`;
+	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
