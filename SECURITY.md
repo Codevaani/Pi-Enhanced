@@ -1,10 +1,10 @@
 # Security Policy
 
 This document should guide you about understanding the security concept behind
-Pi and also where the boundaries are.
+Pi Enhanced and also where the boundaries are.
 
-In general Pi is a coding agent that runs locally within the security boundary
-of the user that is running it.  It's the responsibiltiy of the user to monitor
+In general Pi Enhanced is a coding agent that runs locally within the security boundary
+of the user that is running it. It's the responsibility of the user to monitor
 its operations or to contain it within a container, virtual machine or other
 Sandbox solution.
 
@@ -23,10 +23,10 @@ coding agent trivially and this cannot be protected against.
 
 ## Reporting a Vulnerability
 
-If you believe you found a security vulnerability in pi or another package in
+If you believe you found a security vulnerability in Pi Enhanced or another package in
 this repository, please report it privately by either:
 
-- Emailing `security@earendil.com`, or
+- Emailing `codevaani.in@gmail.com`, or
 - Opening a private report through GitHub Security Advisories for this repository
 
 Please include:
@@ -42,8 +42,7 @@ reports and coordinate disclosure as appropriate.
 ## Scope
 
 Security issues in the distributed packages, command-line tools, APIs, and
-repository code are in scope as well as earendil operated infrastricture
-on `pi.dev`.
+repository code are in scope.
 
 ## Out Of Scope
 
@@ -83,5 +82,5 @@ When possible, include the exact affected path, package version or commit SHA,
 configuration, and a proof of concept against the latest release or latest
 `main`.  For dependency reports, include evidence that the shipped dependency is
 affected and that the issue is reachable through Pi.  For exposed-secret reports,
-include evidence that the credential is owned by Earendil or grants access to
-Earendil-operated infrastructure or services.
+include evidence that the credential is owned by Codevaani or grants access to
+Codevaani-operated infrastructure or services.

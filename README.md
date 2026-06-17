@@ -68,6 +68,20 @@ npm run check
 ./pi-test.sh  # Run pie from sources
 ```
 
+## Contact
+
+- Email: [codevaani.in@gmail.com](mailto:codevaani.in@gmail.com)
+- GitHub: [@Codevaani](https://github.com/Codevaani)
+- Issues: [github.com/Codevaani/Pi-Enhanced/issues](https://github.com/Codevaani/Pi-Enhanced/issues)
+
+## Contributing
+
+Bug reports, feature requests, and pull requests are welcome at [github.com/Codevaani/Pi-Enhanced](https://github.com/Codevaani/Pi-Enhanced). Please open an issue before submitting a PR to discuss the change.
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for the security policy and how to report vulnerabilities.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
