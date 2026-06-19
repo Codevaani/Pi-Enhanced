@@ -437,7 +437,7 @@ describe("ToolExecutionComponent parity", () => {
 		},
 		{
 			title: "AGENTS.md",
-			path: join(process.cwd(), ".pi", "AGENTS.md"),
+			path: join(process.cwd(), ".pie", "AGENTS.md"),
 			content: "Hidden resource instructions",
 			compact: "read resource .pie/AGENTS.md",
 			hidden: "Hidden resource instructions",
