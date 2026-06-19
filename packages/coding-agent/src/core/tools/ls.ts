@@ -102,6 +102,10 @@ export function createLsToolDefinition(
 		label: "ls",
 		description: `List directory contents. Returns entries sorted alphabetically, with '/' suffix for directories. Includes dotfiles. Output is truncated to ${DEFAULT_LIMIT} entries or ${DEFAULT_MAX_BYTES / 1024}KB (whichever is hit first).`,
 		promptSnippet: "List directory contents",
+		promptGuidelines: [
+			"Use ls to explore directory structure before running broad searches.",
+			"Prefer ls to understand project layout, then use find or ripgrep with a specific path to narrow scope.",
+		],
 		parameters: lsSchema,
 		async execute(
 			_toolCallId,

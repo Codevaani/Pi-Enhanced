@@ -2750,6 +2750,82 @@ export class InteractiveMode {
 				return;
 			}
 
+			// ── MCP commands ─────────────────────────────────────────────────
+			if (text === "/mcp" || text.startsWith("/mcp ")) {
+				this.editor.setText("");
+				const parts = text.slice(5).trim().split(/\s+/);
+				const mcpManager = this.session.mcpManager;
+				if (!mcpManager || !mcpManager.isActive) {
+					this.showWarning("MCP: No servers configured. Create .pi/mcp.json or ~/.pi/agent/mcp.json");
+					return;
+				}
+				const lines: string[] = [];
+				if (parts.length === 0 || parts[0] === "") {
+					// Summary view
+					lines.push("MCP Servers:");
+					lines.push(mcpManager.getStatusSummary());
+					const count = mcpManager.toolCount;
+					if (count > 0) {
+						lines.push(`\n${count} MCP tool${count === 1 ? "" : "s"} registered`);
+					}
+				} else {
+					// Detail view for a specific server
+					const serverName = parts[0];
+					const server = mcpManager.getServer(serverName);
+					if (!server) {
+						this.showError(`MCP: No server named "${serverName}"`);
+						return;
+					}
+					lines.push(`Server: ${serverName}`);
+					lines.push(`State:  ${server.state}`);
+					if (server.lastError) lines.push(`Error:  ${server.lastError.message}`);
+				}
+				this.showStatus(lines.join("\n"));
+				return;
+			}
+			if (text.startsWith("/mcp:start ")) {
+				this.editor.setText("");
+				const serverName = text.slice(11).trim();
+				if (!serverName) {
+					this.showError("Usage: /mcp:start <server-name>");
+					return;
+				}
+				const mcpManager = this.session.mcpManager;
+				if (!mcpManager) {
+					this.showError("MCP not available");
+					return;
+				}
+				try {
+					await mcpManager.startServer(serverName);
+					this.showStatus(`MCP: Started ${serverName}`);
+				} catch (err: unknown) {
+					const message = err instanceof Error ? err.message : String(err);
+					this.showError(`MCP: Failed to start ${serverName} — ${message}`);
+				}
+				return;
+			}
+			if (text.startsWith("/mcp:stop ")) {
+				this.editor.setText("");
+				const serverName = text.slice(10).trim();
+				if (!serverName) {
+					this.showError("Usage: /mcp:stop <server-name>");
+					return;
+				}
+				const mcpManager = this.session.mcpManager;
+				if (!mcpManager) {
+					this.showError("MCP not available");
+					return;
+				}
+				try {
+					await mcpManager.stopServer(serverName);
+					this.showStatus(`MCP: Stopped ${serverName}`);
+				} catch (err: unknown) {
+					const message = err instanceof Error ? err.message : String(err);
+					this.showError(`MCP: Failed to stop ${serverName} — ${message}`);
+				}
+				return;
+			}
+
 			// Handle bash command (! for normal, !! for excluded from context)
 			if (text.startsWith("!")) {
 				const isExcluded = text.startsWith("!!");

@@ -50,6 +50,7 @@ For the full first-run flow, see [Quickstart](quickstart.md).
 
 ## Customization
 
+- [MCP servers](mcp.md) - connect to any Model Context Protocol server for tools.
 - [Extensions](extensions.md) - TypeScript modules for tools, commands, events, and custom UI.
 - [Skills](skills.md) - Agent Skills for reusable on-demand capabilities.
 - [Prompt templates](prompt-templates.md) - reusable prompts that expand from slash commands.

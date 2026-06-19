@@ -79,6 +79,7 @@ import {
 	wrapRegisteredTools,
 } from "./extensions/index.ts";
 import { emitSessionShutdownEvent } from "./extensions/runner.ts";
+import { McpManager } from "./mcp/index.ts";
 import type { BashExecutionMessage, CustomMessage } from "./messages.ts";
 import type { ModelRegistry } from "./model-registry.ts";
 import { expandPromptTemplate, type PromptTemplate } from "./prompt-templates.ts";
@@ -317,6 +318,10 @@ export class AgentSession {
 	private _toolDefinitions: Map<string, ToolDefinitionEntry> = new Map();
 	private _toolPromptSnippets: Map<string, string> = new Map();
 	private _toolPromptGuidelines: Map<string, string[]> = new Map();
+
+	// MCP (Model Context Protocol) integration
+	private _mcpManager: McpManager | undefined;
+	private _mcpToolDefinitions: Map<string, ToolDefinition> = new Map();
 
 	// Base system prompt (without extension appends) - used to apply fresh appends each turn
 	private _baseSystemPrompt = "";
@@ -726,6 +731,10 @@ export class AgentSession {
 		} catch {
 			// Dispose must succeed even if an abort hook throws.
 		}
+
+		this._mcpManager?.shutdown().catch(() => {});
+		this._mcpManager = undefined;
+		this._mcpToolDefinitions.clear();
 
 		this._extensionRunner.invalidate(
 			"This extension ctx is stale after session replacement or reload. Do not use a captured pi or command ctx after ctx.newSession(), ctx.fork(), ctx.switchSession(), or ctx.reload(). For newSession, fork, and switchSession, move post-replacement work into withSession and use the ctx passed to withSession. For reload, do not use the old ctx after await ctx.reload().",
@@ -2306,6 +2315,12 @@ export class AgentSession {
 				definition,
 				sourceInfo: createSyntheticSourceInfo(`<sdk:${definition.name}>`, { source: "sdk" }),
 			})),
+			...Array.from(this._mcpToolDefinitions.values())
+				.filter((def) => isAllowedTool(def.name))
+				.map((definition) => ({
+					definition,
+					sourceInfo: createSyntheticSourceInfo(`<mcp:${definition.name}>`, { source: "mcp" }),
+				})),
 		].filter((tool) => isAllowedTool(tool.definition.name));
 		const definitionRegistry = new Map<string, ToolDefinitionEntry>(
 			Array.from(this._baseToolDefinitions.entries())
@@ -2436,6 +2451,43 @@ export class AgentSession {
 			activeToolNames: baseActiveToolNames,
 			includeAllExtensionTools: options.includeAllExtensionTools,
 		});
+
+		// Initialize MCP (Model Context Protocol) — connects to external MCP servers
+		// and registers their tools as built-in Pi tools.
+		this._initMcp();
+	}
+
+	private _initMcp(): void {
+		// Shutdown previous MCP connections if this is a reload
+		if (this._mcpManager) {
+			this._mcpManager.shutdown().catch(() => {});
+			this._mcpManager = undefined;
+			this._mcpToolDefinitions.clear();
+		}
+
+		this._mcpManager = new McpManager();
+		this._mcpManager
+			.initialize(this._cwd, {
+				registerTool: (def: ToolDefinition) => {
+					this._mcpToolDefinitions.set(def.name, def);
+				},
+				unregisterTool: (name: string) => {
+					this._mcpToolDefinitions.delete(name);
+				},
+				onToolsChanged: () => {
+					this._refreshToolRegistry({ includeAllExtensionTools: true });
+				},
+				onLog: (message: string) => {
+					console.error(`[pi-mcp] ${message}`);
+				},
+			})
+			.catch(() => {
+				// MCP initialization failed silently
+			});
+	}
+
+	get mcpManager(): McpManager | undefined {
+		return this._mcpManager;
 	}
 
 	async reload(): Promise<void> {
