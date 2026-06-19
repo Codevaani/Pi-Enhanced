@@ -1,6 +1,6 @@
-import type { AgentTool } from "@earendil-works/pi-agent-core";
-import { StringEnum } from "@earendil-works/pi-ai";
-import { Text } from "@earendil-works/pi-tui";
+import type { AgentTool } from "@earendil-works/pie-agent-core";
+import { StringEnum } from "@earendil-works/pie-ai";
+import { Text } from "@earendil-works/pie-tui";
 import { type Static, Type } from "typebox";
 import type { Theme } from "../../modes/interactive/theme/theme.ts";
 import type { AgentToolResult, ToolDefinition, ToolRenderResultOptions } from "../extensions/types.ts";

@@ -10,11 +10,11 @@ No extension install required. Configure once, tools appear automatically.
 
 ### 1. Create a config file
 
-**Global** (`~/.pi/agent/mcp.json`) — applies to all projects:
+**Global** (`~/.pie/agent/mcp.json`) — applies to all projects:
 
 ```bash
-mkdir -p ~/.pi/agent
-cat > ~/.pi/agent/mcp.json << 'EOF'
+mkdir -p ~/.pie/agent
+cat > ~/.pie/agent/mcp.json << 'EOF'
 {
   "mcpServers": {
     "filesystem": {
@@ -28,7 +28,7 @@ cat > ~/.pi/agent/mcp.json << 'EOF'
 EOF
 ```
 
-**Project-local** (`.pi/mcp.json`) — overrides global per server, only loaded for trusted projects.
+**Project-local** (`.pie/mcp.json`) — overrides global per server, only loaded for trusted projects.
 
 ### 2. Start pi
 
@@ -51,8 +51,8 @@ MCP tools appear as `mcp_<server>_<tool>` (e.g., `mcp_filesystem_read_file`) and
 
 | Location | Scope |
 |----------|-------|
-| `~/.pi/agent/mcp.json` | Global — applies to all projects |
-| `.pi/mcp.json` | Project — overrides global per server |
+| `~/.pie/agent/mcp.json` | Global — applies to all projects |
+| `.pie/mcp.json` | Project — overrides global per server |
 
 Project config takes precedence over global config. Settings merge shallowly; servers override per-name.
 
@@ -330,7 +330,7 @@ Then `/mcp:start context7` to begin. Tools: `mcp_context7_get-library-docs`, etc
 
 - stdio servers inherit your shell environment; use the `env` field to restrict what they see
 - HTTP servers should use `headers` for API keys, not env vars
-- Project-local config (`.pi/mcp.json`) is only loaded for trusted projects
+- Project-local config (`.pie/mcp.json`) is only loaded for trusted projects
 - API keys can reference env vars with `$VAR_NAME` or `${VAR_NAME}` syntax in headers
 
 ---
@@ -339,7 +339,7 @@ Then `/mcp:start context7` to begin. Tools: `mcp_context7_get-library-docs`, etc
 
 ### Server not appearing in `/mcp`
 
-- Check config file syntax: `cat ~/.pi/agent/mcp.json | jq .`
+- Check config file syntax: `cat ~/.pie/agent/mcp.json | jq .`
 - Verify binary is reachable: `which npx` for stdio servers
 - Check stderr logs in `/mcp <name>` — error message is shown there
 - For lazy servers, run `/mcp:start <name>` first

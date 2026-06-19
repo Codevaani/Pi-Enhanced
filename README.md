@@ -13,13 +13,13 @@
 The open-source, extensible coding agent CLI. Built for developers who want full control over their AI-assisted workflow.
 
 * **pie** (`packages/coding-agent`): Interactive coding agent CLI with tools, extensions, skills, and widgets
-* **[@earendil-works/pi-agent-core](packages/agent)**: Agent runtime with tool calling and state management
-* **[@earendil-works/pi-ai](packages/ai)**: Unified multi-provider LLM API (OpenAI, Anthropic, Google, …)
+* **[@earendil-works/pie-agent-core](packages/agent)**: Agent runtime with tool calling and state management
+* **[@earendil-works/pie-ai](packages/ai)**: Unified multi-provider LLM API (OpenAI, Anthropic, Google, …)
 
 ## Quick Start
 
 ```bash
-npm install -g @earendil-works/pi-coding-agent
+npm install -g @earendil-works/pie-coding-agent
 # or
 brew install pi
 ```
@@ -52,7 +52,7 @@ pie  # Start interactive mode
 - **Prompt templates**: Reusable prompt snippets
 - **Session management**: Fork, branch, resume, compact conversations
 - **Live widgets**: Todo tracker, indexing progress, and more
-- **Keybinding config**: Fully customizable via `~/.pi/keybindings.json`
+- **Keybinding config**: Fully customizable via `~/.pie/keybindings.json`
 
 ## Development
 

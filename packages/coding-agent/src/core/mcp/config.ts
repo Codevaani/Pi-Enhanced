@@ -1,5 +1,5 @@
 /**
- * MCP config loader — reads from .pi/mcp.json and ~/.pi/agent/mcp.json.
+ * MCP config loader — reads from .pie/mcp.json and ~/.pie/agent/mcp.json.
  * Project config overrides global config per server.
  */
 
@@ -90,7 +90,7 @@ async function readJson(path: string): Promise<unknown | null> {
 }
 
 /**
- * Load and merge global (~/.pi/agent/mcp.json) and project (.pi/mcp.json) config.
+ * Load and merge global (~/.pie/agent/mcp.json) and project (.pie/mcp.json) config.
  */
 export async function loadMcpConfig(cwd: string): Promise<McpConfig> {
 	const globalPath = join(homedir(), ".pi", "agent", "mcp.json");

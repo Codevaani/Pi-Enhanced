@@ -17,7 +17,7 @@ Pi ships with powerful defaults but skips features like sub agents and plan mode
 ## Quick Start
 
 ```bash
-npm install -g --ignore-scripts @earendil-works/pi-coding-agent
+npm install -g --ignore-scripts @earendil-works/pie-coding-agent
 ```
 
 Or use the installer:
@@ -99,11 +99,11 @@ export default function (pi: ExtensionAPI) {
 }
 ```
 
-Place in `~/.pi/agent/extensions/`, `.pi/extensions/`, or a [pi package](#pi-packages). See [docs/extensions.md](docs/extensions.md).
+Place in `~/.pie/agent/extensions/`, `.pie/extensions/`, or a [pi package](#pi-packages). See [docs/extensions.md](docs/extensions.md).
 
 ### Skills & Prompt Templates
 
-Skills are on-demand capability packages (`.pi/skills/`). Prompt templates are reusable Markdown snippets (`.pi/prompts/`). See [docs/skills.md](docs/skills.md) and [docs/prompt-templates.md](docs/prompt-templates.md).
+Skills are on-demand capability packages (`.pie/skills/`). Prompt templates are reusable Markdown snippets (`.pie/prompts/`). See [docs/skills.md](docs/skills.md) and [docs/prompt-templates.md](docs/prompt-templates.md).
 
 ## Development
 

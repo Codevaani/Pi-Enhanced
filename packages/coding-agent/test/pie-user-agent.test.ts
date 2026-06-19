@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { getPiUserAgent } from "../src/utils/pi-user-agent.ts";
+import { getPieUserAgent } from "../src/utils/pie-user-agent.ts";
 
-describe("getPiUserAgent", () => {
+describe("getPieUserAgent", () => {
 	it("formats the user agent expected by pi.dev", () => {
 		const runtime = process.versions.bun ? `bun/${process.versions.bun}` : `node/${process.version}`;
-		const userAgent = getPiUserAgent("1.2.3");
+		const userAgent = getPieUserAgent("1.2.3");
 
-		expect(userAgent).toBe(`pi/1.2.3 (${process.platform}; ${runtime}; ${process.arch})`);
-		expect(userAgent).toMatch(/^pi\/[^\s()]+ \([^;()]+;\s*[^;()]+;\s*[^()]+\)$/);
+		expect(userAgent).toBe(`pie/1.2.3 (${process.platform}; ${runtime}; ${process.arch})`);
+		expect(userAgent).toMatch(/^pie\/[^\s()]+ \([^;()]+;\s*[^;()]+;\s*[^()]+\)$/);
 	});
 });

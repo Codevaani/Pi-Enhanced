@@ -31,11 +31,11 @@ compaction-results/
 .opencode/
 syntax.jsonl
 out.jsonl
-pi-*.html
+pie-*.html
 out.html
 packages/coding-agent/binaries/
 todo.md
 plans/
-.pi/hf-sessions/
-.pi/hf-sessions-backup/
+.pie/hf-sessions/
+.pie/hf-sessions-backup/
 collect.sh
