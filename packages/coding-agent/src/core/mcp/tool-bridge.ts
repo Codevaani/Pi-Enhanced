@@ -89,9 +89,9 @@ export class McpToolBridge {
 	private readonly settings: McpSettings;
 	private readonly register: ToolRegisterFn;
 	private readonly unregister: ToolUnregisterFn;
-	/** serverName → Set<piToolName> */
+	/** serverName → Set<pieToolName> */
 	private readonly serverTools = new Map<string, Set<string>>();
-	/** piToolName → serverName (reverse lookup) */
+	/** pieToolName → serverName (reverse lookup) */
 	private readonly toolToServer = new Map<string, string>();
 
 	constructor(settings: McpSettings, register: ToolRegisterFn, unregister: ToolUnregisterFn) {

@@ -10,7 +10,7 @@ import { VERSION } from "@earendil-works/pie-coding-agent";
 
 // --- PI MASCOT ---
 // Based on pi_mascot.ts - the pi agent character
-function getPiMascot(theme: Theme): string[] {
+function getPieMascot(theme: Theme): string[] {
 	// --- COLORS ---
 	// 3b1b Blue: R=80, G=180, B=230
 	const piBlue = (text: string) => theme.fg("accent", text);
@@ -51,7 +51,7 @@ export default function (pi: ExtensionAPI) {
 			ctx.ui.setHeader((_tui, theme) => {
 				return {
 					render(_width: number): string[] {
-						const mascotLines = getPiMascot(theme);
+						const mascotLines = getPieMascot(theme);
 						// Add a subtitle with hint
 						const subtitle = `${theme.fg("muted", "   shitty coding agent")}${theme.fg("dim", ` v${VERSION}`)}`;
 						return [...mascotLines, subtitle];

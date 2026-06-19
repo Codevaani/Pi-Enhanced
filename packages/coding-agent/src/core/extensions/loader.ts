@@ -88,19 +88,19 @@ function getAliases(): Record<string, string> {
 	};
 
 	const piCodingAgentEntry = packageIndex;
-	const piAgentCoreEntry = resolveWorkspaceOrImport("agent/dist/index.js", "@earendil-works/pie-agent-core");
+	const pieAgentCoreEntry = resolveWorkspaceOrImport("agent/dist/index.js", "@earendil-works/pie-agent-core");
 	const piTuiEntry = resolveWorkspaceOrImport("tui/dist/index.js", "@earendil-works/pie-tui");
 	const piAiEntry = resolveWorkspaceOrImport("ai/dist/index.js", "@earendil-works/pie-ai");
 	const piAiOauthEntry = resolveWorkspaceOrImport("ai/dist/oauth.js", "@earendil-works/pie-ai/oauth");
 
 	_aliases = {
 		"@earendil-works/pie-coding-agent": piCodingAgentEntry,
-		"@earendil-works/pie-agent-core": piAgentCoreEntry,
+		"@earendil-works/pie-agent-core": pieAgentCoreEntry,
 		"@earendil-works/pie-tui": piTuiEntry,
 		"@earendil-works/pie-ai": piAiEntry,
 		"@earendil-works/pie-ai/oauth": piAiOauthEntry,
 		"@mariozechner/pi-coding-agent": piCodingAgentEntry,
-		"@mariozechner/pi-agent-core": piAgentCoreEntry,
+		"@mariozechner/pi-agent-core": pieAgentCoreEntry,
 		"@mariozechner/pi-tui": piTuiEntry,
 		"@mariozechner/pi-ai": piAiEntry,
 		"@mariozechner/pi-ai/oauth": piAiOauthEntry,
