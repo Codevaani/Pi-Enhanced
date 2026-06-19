@@ -48,28 +48,28 @@ function getDefaultAttributionHeaders(
 
 	if (isOpenRouterModel(model)) {
 		return {
-			"HTTP-Referer": "https://pi.dev",
-			"X-OpenRouter-Title": "pi",
+			"HTTP-Referer": "https://pie.dev",
+			"X-OpenRouter-Title": "pie",
 			"X-OpenRouter-Categories": "cli-agent",
 		};
 	}
 
 	if (isNvidiaNimModel(model)) {
 		return {
-			"X-BILLING-INVOKE-ORIGIN": "Pi",
+			"X-BILLING-INVOKE-ORIGIN": "Pie",
 		};
 	}
 
 	if (isCloudflareModel(model)) {
 		return {
-			"User-Agent": "pi-coding-agent",
+			"User-Agent": "pie-coding-agent",
 		};
 	}
 
 	if (isVercelGatewayModel(model)) {
 		return {
-			"http-referer": "https://pi.dev",
-			"x-title": "pi",
+			"http-referer": "https://pie.dev",
+			"x-title": "pie",
 		};
 	}
 
@@ -85,7 +85,7 @@ function getSessionHeaders(model: Model<Api>, sessionId: string | undefined): Re
 	) {
 		return undefined;
 	}
-	return { "x-opencode-session": sessionId, "x-opencode-client": "pi" };
+	return { "x-opencode-session": sessionId, "x-opencode-client": "pie" };
 }
 
 export function mergeProviderAttributionHeaders(

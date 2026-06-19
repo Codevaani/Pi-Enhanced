@@ -1,5 +1,5 @@
 /**
- * MCP tool bridge — converts MCP tool definitions to Pi ToolDefinitions
+ * MCP tool bridge — converts MCP tool definitions to pie ToolDefinitions
  * and manages their lifecycle.
  */
 

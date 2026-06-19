@@ -1,5 +1,5 @@
 /**
- * MCP (Model Context Protocol) integration for Pi.
+ * MCP (Model Context Protocol) integration for pie.
  *
  * Entry point for the built-in MCP module. Orchestrates config loading,
  * server connections, and tool bridging.
