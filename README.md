@@ -6,29 +6,54 @@
 
 ---
 
-# Pi Enhanced (pie) — Coding Agent Monorepo
+# pie — AI Coding Assistant
 
-> **Forked from [earendil-works/pi](https://github.com/earendil-works/pi). Maintained by [@Codevaani](https://github.com/Codevaani).**
+> **v1.0.0** — First release. Maintained by [@Codevaani](https://github.com/Codevaani).
 
 The open-source, extensible coding agent CLI. Built for developers who want full control over their AI-assisted workflow.
 
-* **pie** (`packages/coding-agent`): Interactive coding agent CLI with tools, extensions, skills, and widgets
-* **[@earendil-works/pie-agent-core](packages/agent)**: Agent runtime with tool calling and state management
-* **[@earendil-works/pie-ai](packages/ai)**: Unified multi-provider LLM API (OpenAI, Anthropic, Google, …)
+- **Multi-provider**: OpenAI, Anthropic, Google, Groq, xAI, OpenRouter, Mistral, and more
+- **Extensions**: Add custom tools, UI widgets, event hooks
+- **Skills**: Load CLI tools as LLM-accessible skills
+- **Session management**: Fork, branch, resume, compact conversations
+- **Live widgets**: Todo tracker, indexing progress, and more
 
-## Quick Start
+---
+
+## Install
+
+### Linux / macOS (curl bash)
 
 ```bash
-npm install -g @earendil-works/pie-coding-agent
-# or
-brew install pi
+curl -fsSL https://github.com/Codevaani/Pi-Enhanced/releases/latest/download/install.sh | bash
 ```
 
-Then:
+### Windows (PowerShell)
+
+```powershell
+iwr -Uri https://github.com/Codevaani/Pi-Enhanced/releases/latest/download/install.ps1 -UseBasicParsing | iex
+```
+
+### Manual
+
+Download the archive for your platform from the [releases page](https://github.com/Codevaani/Pi-Enhanced/releases), extract it, and add the binary to your PATH.
+
+| Platform | File |
+|----------|------|
+| macOS (Apple Silicon) | `pie-darwin-arm64.tar.gz` |
+| macOS (Intel) | `pie-darwin-x64.tar.gz` |
+| Linux x64 | `pie-linux-x64.tar.gz` |
+| Linux ARM64 | `pie-linux-arm64.tar.gz` |
+| Windows x64 | `pie-windows-x64.zip` |
+| Windows ARM64 | `pie-windows-arm64.zip` |
+
+Then run:
 
 ```bash
 pie  # Start interactive mode
 ```
+
+---
 
 ## Built-in Tools
 
@@ -44,15 +69,7 @@ pie  # Start interactive mode
 | `todo` | Track multi-step progress with live widget |
 | `web_search` | Search the live web via Exa MCP |
 
-## Features
-
-- **Multi-provider**: OpenAI, Anthropic, Google, Groq, xAI, OpenRouter, Mistral, and more
-- **Extensions**: Add custom tools, UI widgets, event hooks
-- **Skills**: Load CLI tools as LLM-accessible skills
-- **Prompt templates**: Reusable prompt snippets
-- **Session management**: Fork, branch, resume, compact conversations
-- **Live widgets**: Todo tracker, indexing progress, and more
-- **Keybinding config**: Fully customizable via `~/.pie/keybindings.json`
+---
 
 ## Development
 
@@ -62,8 +79,10 @@ cd Pi-Enhanced
 
 npm install --ignore-scripts
 npm run check
-./pi-test.sh  # Run pie from sources
+./pie-test.sh  # Run pie from sources
 ```
+
+---
 
 ## Contact
 
@@ -71,13 +90,7 @@ npm run check
 - GitHub: [@Codevaani](https://github.com/Codevaani)
 - Issues: [github.com/Codevaani/Pi-Enhanced/issues](https://github.com/Codevaani/Pi-Enhanced/issues)
 
-## Contributing
-
-Bug reports, feature requests, and pull requests are welcome at [github.com/Codevaani/Pi-Enhanced](https://github.com/Codevaani/Pi-Enhanced). Please open an issue before submitting a PR to discuss the change.
-
-## Security
-
-See [SECURITY.md](SECURITY.md) for the security policy and how to report vulnerabilities.
+---
 
 ## License
 

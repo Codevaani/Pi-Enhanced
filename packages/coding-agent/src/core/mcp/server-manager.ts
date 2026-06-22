@@ -325,7 +325,7 @@ export class McpServerManager {
 				params: {
 					protocolVersion: "2025-03-26",
 					capabilities: { tools: {} },
-					clientInfo: { name: "pie", version: "0.79.6" },
+					clientInfo: { name: "pie", version: "1.0.0" },
 				},
 			});
 

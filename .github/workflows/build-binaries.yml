@@ -92,13 +92,14 @@ jobs:
           \`\`\`
 
           ### Manual
-          Download the archive for your platform below, extract, and add the binary to your PATH.
+          Download the archive for your platform from the assets below, extract, and add \`pie\` (or \`pie.exe\` on Windows) to your PATH.
           EOF
           )
 
-          # Copy install script alongside binaries for upload
+          # Copy install scripts alongside binaries for upload
           cp "${GITHUB_WORKSPACE}/scripts/install.sh" .
-          release_assets+=(install.sh)
+          cp "${GITHUB_WORKSPACE}/scripts/install.ps1" .
+          release_assets+=(install.sh install.ps1)
 
           if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
             gh release edit "${RELEASE_TAG}" \
