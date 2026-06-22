@@ -17,20 +17,27 @@ function Write-Error($msg) { Write-Host "==> $msg" -ForegroundColor Red; exit 1 
 # Detect platform
 function Get-Platform {
     $os = "windows"
-    $processArch = [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString()
-    if (-not $processArch) {
-        $processArch = $env:PROCESSOR_ARCHITECTURE
+    $archCandidates = @(
+        [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture,
+        $env:PROCESSOR_ARCHITEW6432,
+        $env:PROCESSOR_ARCHITECTURE
+    )
+
+    foreach ($candidate in $archCandidates) {
+        if ($null -eq $candidate) { continue }
+        $value = $candidate.ToString().Trim()
+        if (-not $value) { continue }
+        $arch = switch ($value.ToUpperInvariant()) {
+            "X64"   { "x64" }
+            "AMD64" { "x64" }
+            "ARM64" { "arm64" }
+            default { $null }
+        }
+        if ($arch) { return "pie-$os-$arch.zip" }
     }
-    if ($processArch -eq "AMD64" -and $env:PROCESSOR_ARCHITEW6432) {
-        $processArch = $env:PROCESSOR_ARCHITEW6432
-    }
-    $arch = switch ($processArch.ToUpperInvariant()) {
-        "X64"   { "x64" }
-        "AMD64" { "x64" }
-        "ARM64" { "arm64" }
-        default { Write-Error "Unsupported architecture: $processArch" }
-    }
-    return "pie-$os-$arch.zip"
+
+    Write-Warn "Could not detect CPU architecture; defaulting to x64."
+    return "pie-$os-x64.zip"
 }
 
 # Resolve release tag and download URL
