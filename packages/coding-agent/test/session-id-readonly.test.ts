@@ -103,7 +103,7 @@ describe("--session-id read-only commands", () => {
 		expect(hasSessionWithId(join(result.agentDir, "sessions"), "read-only-models")).toBe(false);
 	});
 
-		it.skipIf(process.platform === "darwin")("rejects an existing fork target session id", async () => {
+	it.skipIf(process.platform === "darwin")("rejects an existing fork target session id", async () => {
 		const result = await runCli(
 			(dirs) => ["--session-dir", dirs.sessionDir, "--fork", "source-id", "--session-id", "existing-id", "-p", "hi"],
 			(dirs) => {
