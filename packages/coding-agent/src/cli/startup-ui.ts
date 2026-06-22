@@ -14,7 +14,7 @@ import { detectTerminalBackgroundTheme, initTheme, setTheme } from "../modes/int
 
 const OFFICIAL_PACKAGE_NAME = "@earendil-works/pie-coding-agent";
 const OFFICIAL_APP_NAME = "pie";
-const OFFICIAL_CONFIG_DIR_NAME = ".pi";
+const OFFICIAL_CONFIG_DIR_NAME = CONFIG_DIR_NAME;
 
 interface DistributionMetadata {
 	packageName: string;
