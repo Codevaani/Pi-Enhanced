@@ -17,10 +17,18 @@ function Write-Error($msg) { Write-Host "==> $msg" -ForegroundColor Red; exit 1 
 # Detect platform
 function Get-Platform {
     $os = "windows"
-    $arch = switch ([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture) {
+    $processArch = [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString()
+    if (-not $processArch) {
+        $processArch = $env:PROCESSOR_ARCHITECTURE
+    }
+    if ($processArch -eq "AMD64" -and $env:PROCESSOR_ARCHITEW6432) {
+        $processArch = $env:PROCESSOR_ARCHITEW6432
+    }
+    $arch = switch ($processArch.ToUpperInvariant()) {
         "X64"   { "x64" }
-        "Arm64" { "arm64" }
-        default { Write-Error "Unsupported architecture: $_" }
+        "AMD64" { "x64" }
+        "ARM64" { "arm64" }
+        default { Write-Error "Unsupported architecture: $processArch" }
     }
     return "pie-$os-$arch.zip"
 }
