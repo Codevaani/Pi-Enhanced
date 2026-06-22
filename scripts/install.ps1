@@ -93,9 +93,12 @@ function Main {
             Move-Item $binary.FullName (Join-Path $binary.Directory $targetName) -Force
         }
 
+        $packageDir = $binary.Directory.FullName
         $installDir = Get-InstallDir
         New-Item -ItemType Directory -Force -Path $installDir | Out-Null
-        Copy-Item (Join-Path $binary.Directory $targetName) (Join-Path $installDir $targetName) -Force
+        Write-Info "Removing existing installation from: $installDir"
+        Get-ChildItem -Path $installDir -Force | Remove-Item -Recurse -Force
+        Copy-Item -Path (Join-Path $packageDir "*") -Destination $installDir -Recurse -Force
 
         Write-Info "Installed to: $installDir\pie.exe"
 

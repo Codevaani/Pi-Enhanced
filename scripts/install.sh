@@ -100,56 +100,38 @@ main() {
     tmpdir=$(mktemp -d)
     cd "$tmpdir"
 
+    local package_dir
     if echo "$platform" | grep -q "\.zip$"; then
         curl -fsSL "$url" -o pie.zip
         unzip -q pie.zip -d pie-extracted
-        # Find the binary (could be pi.exe or pie.exe in the extracted dir)
-        local binary
-        binary=$(find pie-extracted -name "pie.exe" -o -name "pi.exe" 2>/dev/null | head -1)
-        if [ -z "$binary" ]; then
-            error "Binary not found in the archive"
-        fi
-        mv "$binary" pie.exe
+        package_dir="pie-extracted"
     else
         curl -fsSL "$url" | tar -xz
-        # After extraction, the binary is inside pie/ directory
-        if [ -f "pie/pie" ]; then
-            mv pie/pie .
-        elif [ -f "pie/pi" ]; then
-            mv pie/pi .
-        else
-            error "Binary not found in the archive"
-        fi
-        rm -rf pie
+        package_dir="pie"
+    fi
+
+    local binary
+    binary=$(find "$package_dir" -name "pie" -o -name "pi" -o -name "pie.exe" -o -name "pi.exe" 2>/dev/null | head -1)
+    if [ -z "$binary" ]; then
+        error "Binary not found in the archive"
+    fi
+
+    local binary_name
+    binary_name=$(basename "$binary")
+    if [ "$binary_name" = "pi" ]; then
+        mv "$binary" "$(dirname "$binary")/pie"
+    elif [ "$binary_name" = "pi.exe" ]; then
+        mv "$binary" "$(dirname "$binary")/pie.exe"
     fi
 
     local install_dir
     install_dir=$(detect_install_dir)
 
-    # Determine binary name
-    local binary_name="pie"
-    if echo "$platform" | grep -q "windows"; then
-        if [ -f "pie.exe" ]; then
-            binary_name="pie.exe"
-        else
-            binary_name="pi.exe"
-        fi
-    else
-        if [ -f "pie" ]; then
-            binary_name="pie"
-        else
-            binary_name="pi"
-        fi
-    fi
-
-    # Rename to pie
-    if [ "$binary_name" != "pie" ] && [ "$binary_name" != "pie.exe" ]; then
-        mv "$binary_name" "pie${binary_name##*pi}"
-    fi
-
-    chmod +x pie*
+    chmod +x "$package_dir"/pie* 2>/dev/null || true
     mkdir -p "$install_dir"
-    mv pie* "$install_dir/"
+    info "Removing existing installation from: $install_dir"
+    find "$install_dir" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+    cp -R "$package_dir"/. "$install_dir/"
 
     cd /
     rm -rf "$tmpdir"
