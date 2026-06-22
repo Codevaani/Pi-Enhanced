@@ -74,14 +74,40 @@ jobs:
           sha256sum "${release_assets[@]}" > SHA256SUMS
           release_assets+=(SHA256SUMS)
 
+          BODY=$(cat <<-EOF
+          # pie ${RELEASE_TAG}
+
+          AI coding assistant with read, bash, edit, write tools.
+
+          ## Install
+
+          ### Linux / macOS
+          \`\`\`bash
+          curl -fsSL https://github.com/Codevaani/Pi-Enhanced/releases/download/${RELEASE_TAG}/install.sh | bash
+          \`\`\`
+
+          ### Windows (PowerShell)
+          \`\`\`powershell
+          iwr -Uri https://github.com/Codevaani/Pi-Enhanced/releases/download/${RELEASE_TAG}/install.ps1 -UseBasicParsing | iex
+          \`\`\`
+
+          ### Manual
+          Download the archive for your platform below, extract, and add the binary to your PATH.
+          EOF
+          )
+
+          # Copy install script alongside binaries for upload
+          cp "${GITHUB_WORKSPACE}/scripts/install.sh" .
+          release_assets+=(install.sh)
+
           if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
             gh release edit "${RELEASE_TAG}" \
               --title "${RELEASE_TAG}" \
-              --notes-file /dev/stdin <<< "Automated build of pie ${RELEASE_TAG}"
+              --notes "$BODY"
             gh release upload "${RELEASE_TAG}" "${release_assets[@]}" --clobber
           else
             gh release create "${RELEASE_TAG}" \
               --title "${RELEASE_TAG}" \
-              --notes "Automated build of pie ${RELEASE_TAG}" \
+              --notes "$BODY" \
               "${release_assets[@]}"
           fi
