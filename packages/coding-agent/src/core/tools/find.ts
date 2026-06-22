@@ -2,6 +2,7 @@ import { createInterface } from "node:readline";
 import type { AgentTool } from "@earendil-works/pie-agent-core";
 import { Text } from "@earendil-works/pie-tui";
 import { spawn } from "child_process";
+import { minimatch } from "minimatch";
 import path from "path";
 import { type Static, Type } from "typebox";
 import { keyHint } from "../../modes/interactive/components/keybinding-hints.ts";
@@ -247,11 +248,20 @@ export function createFindToolDefinition(
 						// fd --glob matches against the basename unless --full-path is set; in --full-path
 						// mode it matches against the absolute candidate path, so a path-containing
 						// pattern like 'src/**/*.spec.ts' needs a leading '**/' to match anything.
+						// On Windows, fd's --full-path does not correctly match patterns using /
+						// because internal paths from walkdir use \\ separators. As a fallback,
+						// match against the basename only and filter results with minimatch.
+						const needsPathMatch = pattern.includes("/");
 						let effectivePattern = pattern;
-						if (pattern.includes("/")) {
-							args.push("--full-path");
-							if (!pattern.startsWith("/") && !pattern.startsWith("**/") && pattern !== "**") {
-								effectivePattern = `**/${pattern}`;
+						if (needsPathMatch) {
+							if (process.platform === "win32") {
+								// Extract just the filename glob for fd; full-path filter is done via minimatch.
+								effectivePattern = pattern.split("/").pop() || "*";
+							} else {
+								args.push("--full-path");
+								if (!pattern.startsWith("/") && !pattern.startsWith("**/") && pattern !== "**") {
+									effectivePattern = `**/${pattern}`;
+								}
 							}
 						}
 						args.push("--", effectivePattern, normalizedSearchPath);
@@ -324,6 +334,10 @@ export function createFindToolDefinition(
 								}
 								relativePath = toPosixPath(relativePath);
 								if (hadTrailingSlash && !relativePath.endsWith("/")) relativePath += "/";
+								// On Windows, fd matched only the basename; apply the full-pattern filter here.
+								if (needsPathMatch && process.platform === "win32") {
+									if (!minimatch(relativePath, pattern, { dot: true })) continue;
+								}
 								relativized.push(relativePath);
 							}
 
