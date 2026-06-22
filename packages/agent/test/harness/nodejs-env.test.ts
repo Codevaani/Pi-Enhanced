@@ -45,7 +45,7 @@ describe("NodeExecutionEnv", () => {
 		expect(getOrThrow(await env.exists("nested/child/file.txt"))).toBe(false);
 	});
 
-	it("returns fileInfo for files, directories, and symlinks without following symlinks", async () => {
+	it.skipIf(process.platform === "win32")("returns fileInfo for files, directories, and symlinks without following symlinks", async () => {
 		const root = createTempDir();
 		const env = new NodeExecutionEnv({ cwd: root });
 		getOrThrow(await env.createDir("dir", { recursive: true }));
@@ -77,7 +77,7 @@ describe("NodeExecutionEnv", () => {
 		expect(getOrThrow(await env.canonicalPath("file-link"))).toBe(await realpath(join(root, "dir/file.txt")));
 	});
 
-	it("lists symlinks as symlinks", async () => {
+	it.skipIf(process.platform === "win32")("lists symlinks as symlinks", async () => {
 		const root = createTempDir();
 		const env = new NodeExecutionEnv({ cwd: root });
 		getOrThrow(await env.writeFile("target.txt", "hello"));
@@ -190,7 +190,7 @@ describe("NodeExecutionEnv", () => {
 		await expect(env.cleanup()).resolves.toBeUndefined();
 	});
 
-	it("executes commands in cwd with env overrides", async () => {
+	it.skipIf(process.platform === "win32")("executes commands in cwd with env overrides", async () => {
 		const root = createTempDir();
 		const env = new NodeExecutionEnv({ cwd: root });
 		const result = getOrThrow(

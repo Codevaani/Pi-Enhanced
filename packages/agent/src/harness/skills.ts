@@ -360,16 +360,17 @@ function dirnameEnvPath(path: string): string {
 }
 
 function basenameEnvPath(path: string): string {
-	const normalized = path.replace(/\/+$/, "");
-	const slashIndex = normalized.lastIndexOf("/");
-	return slashIndex === -1 ? normalized : normalized.slice(slashIndex + 1);
+	const normalized = path.replace(/[/\\]+$/, "");
+	const lastSlash = Math.max(normalized.lastIndexOf("/"), normalized.lastIndexOf("\\"));
+	return lastSlash === -1 ? normalized : normalized.slice(lastSlash + 1);
 }
 
 function relativeEnvPath(root: string, path: string): string {
-	const normalizedRoot = root.replace(/\/+$/, "");
-	const normalizedPath = path.replace(/\/+$/, "");
+	const normalizedRoot = root.replace(/[/\\]+$/, "");
+	const normalizedPath = path.replace(/[/\\]+$/, "");
 	if (normalizedPath === normalizedRoot) return "";
-	return normalizedPath.startsWith(`${normalizedRoot}/`)
+	const sep = normalizedRoot.includes("\\") ? "\\" : "/";
+	return normalizedPath.startsWith(`${normalizedRoot}${sep}`)
 		? normalizedPath.slice(normalizedRoot.length + 1)
-		: normalizedPath.replace(/^\/+/, "");
+		: normalizedPath.replace(/^[/\\]+/, "");
 }
