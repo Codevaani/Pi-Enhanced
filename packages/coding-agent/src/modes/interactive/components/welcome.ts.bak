@@ -1,0 +1,274 @@
+import { type Component, truncateToWidth, visibleWidth } from "@earendil-works/pie-tui";
+import { APP_NAME } from "../../../config.ts";
+import { theme } from "../theme/theme.ts";
+
+// ============================================================================
+// PI Logo — block art matching omp's π mark
+// ============================================================================
+
+const PI_LOGO = ["▀██████████▀", " ╘██    ██  ", "  ██    ██  ", "  ██    ██  ", " ▄██▄  ▄██▄ "];
+
+// ============================================================================
+// Box-drawing characters (rounded style)
+// ============================================================================
+
+const BOX = {
+	topLeft: "┌",
+	topRight: "┐",
+	bottomLeft: "└",
+	bottomRight: "┘",
+	horizontal: "─",
+	vertical: "│",
+	teeUp: "┴",
+	teeDown: "┬",
+	teeLeft: "┤",
+	teeRight: "├",
+};
+
+// ============================================================================
+// Tips — short usage tips shown on welcome
+// ============================================================================
+
+const TIPS: readonly string[] = [
+	"Press . (dot) to keep going without typing more",
+	"Use /model to switch models mid-session",
+	"Ctrl+D saves draft and exits",
+	"Drop files onto the terminal to attach them",
+	"Use ! to run bash commands inline",
+	"Press ? for keyboard shortcuts",
+	"/compact to compress context when it gets long",
+];
+
+function pickTip(): string {
+	if (TIPS.length === 0) return "";
+	return TIPS[Math.floor(Math.random() * TIPS.length)] ?? "";
+}
+
+// ============================================================================
+// Helper functions
+// ============================================================================
+
+/** Center text within a given width, ANSI-aware */
+function centerText(text: string, width: number): string {
+	const visLen = visibleWidth(text);
+	if (visLen >= width) return truncateToWidth(text, width);
+	const leftPad = Math.floor((width - visLen) / 2);
+	const rightPad = width - visLen - leftPad;
+	return " ".repeat(leftPad) + text + " ".repeat(rightPad);
+}
+
+/** Fit string to exact width with truncation */
+function fitToWidth(str: string, width: number): string {
+	const visLen = visibleWidth(str);
+	if (visLen > width) {
+		return truncateToWidth(str, width, "…");
+	}
+	return str + " ".repeat(width - visLen);
+}
+
+// ============================================================================
+// WelcomeComponent
+// ============================================================================
+
+export interface WelcomeComponentOptions {
+	version: string;
+	modelName: string;
+	providerName: string;
+	recentSessions?: Array<{ name: string; timeAgo: string }>;
+}
+
+/**
+ * Two-column welcome box matching omp's header style.
+ *
+ * Left column:  Welcome text, π logo, model + provider
+ * Right column: Keyboard shortcuts, tips, recent sessions
+ */
+export class WelcomeComponent implements Component {
+	private version: string;
+	private modelName: string;
+	private providerName: string;
+	private recentSessions: Array<{ name: string; timeAgo: string }>;
+	private selectedTip: string;
+
+	// Cache
+	private cachedWidth = -1;
+	private cachedLines: string[] | undefined;
+
+	constructor(options: WelcomeComponentOptions) {
+		this.version = options.version;
+		this.modelName = options.modelName;
+		this.providerName = options.providerName;
+		this.recentSessions = options.recentSessions ?? [];
+		this.selectedTip = pickTip();
+	}
+
+	setModel(modelName: string, providerName: string): void {
+		this.modelName = modelName;
+		this.providerName = providerName;
+		this.invalidate();
+	}
+
+	invalidate(): void {
+		this.cachedWidth = -1;
+		this.cachedLines = undefined;
+	}
+
+	render(width: number): string[] {
+		// Return cached if available
+		if (this.cachedLines && this.cachedWidth === width) {
+			return this.cachedLines;
+		}
+
+		const lines = this.renderLines(width);
+		this.cachedLines = lines;
+		this.cachedWidth = width;
+		return lines;
+	}
+
+	private renderLines(termWidth: number): string[] {
+		// Box dimensions — responsive with max width
+		const maxWidth = 100;
+		const boxWidth = Math.min(maxWidth, Math.max(0, termWidth - 2));
+		if (boxWidth < 10) {
+			// Too narrow for box, render minimal header
+			return this.renderMinimalHeader(termWidth);
+		}
+
+		const innerWidth = boxWidth - 2; // 2 = left + right border
+		const dualContentWidth = boxWidth - 3; // 3 = │ + │ + │
+
+		// Column sizing
+		const preferredLeftCol = 28;
+		const minLeftCol = 14; // logo width
+		const minRightCol = 22;
+		const leftMinContentWidth = Math.max(
+			minLeftCol,
+			visibleWidth("Welcome back!"),
+			visibleWidth(this.modelName),
+			visibleWidth(this.providerName),
+		);
+
+		const desiredLeftCol = Math.min(preferredLeftCol, Math.max(minLeftCol, Math.floor(dualContentWidth * 0.38)));
+		const dualLeftCol =
+			dualContentWidth >= minRightCol + 1
+				? Math.min(desiredLeftCol, dualContentWidth - minRightCol)
+				: Math.max(1, dualContentWidth - 1);
+		const dualRightCol = Math.max(1, dualContentWidth - dualLeftCol);
+		const showRightColumn = dualLeftCol >= leftMinContentWidth && dualRightCol >= minRightCol;
+		const leftCol = showRightColumn ? dualLeftCol : innerWidth;
+		const rightCol = showRightColumn ? dualRightCol : 0;
+
+		// ── Left column content ──
+		const leftLines = [
+			"",
+			centerText(theme.bold("Welcome back!"), leftCol),
+			"",
+			...PI_LOGO.map((l) => centerText(theme.fg("accent", l), leftCol)),
+			"",
+			centerText(theme.fg("muted", this.modelName), leftCol),
+			centerText(theme.fg("dim", this.providerName), leftCol),
+			"",
+		];
+
+		// ── Right column content ──
+		const separator = ` ${theme.fg("dim", BOX.horizontal.repeat(Math.max(0, rightCol - 2)))}`;
+
+		const rightLines: string[] = [
+			` ${theme.bold(theme.fg("accent", "Tips"))}`,
+			` ${theme.fg("dim", "?")} ${theme.fg("muted", "for keyboard shortcuts")}`,
+			` ${theme.fg("dim", "#")} ${theme.fg("muted", "for prompt actions")}`,
+			` ${theme.fg("dim", "/")} ${theme.fg("muted", "for commands")}`,
+			` ${theme.fg("dim", "!")} ${theme.fg("muted", "to run bash")}`,
+			` ${theme.fg("dim", "$")} ${theme.fg("muted", "to run python")}`,
+			separator,
+			` ${theme.bold(theme.fg("accent", "Shortcuts"))}`,
+			` ${theme.fg("dim", "Ctrl+C")} ${theme.fg("muted", "interrupt")}`,
+			` ${theme.fg("dim", "Ctrl+D")} ${theme.fg("muted", "exit (save draft)")}`,
+			` ${theme.fg("dim", "/compact")} ${theme.fg("muted", "compress context")}`,
+			separator,
+			` ${theme.bold(theme.fg("accent", "Recent sessions"))}`,
+		];
+
+		// Recent sessions
+		if (this.recentSessions.length === 0) {
+			rightLines.push(` ${theme.fg("dim", "No recent sessions")}`);
+		} else {
+			const bulletPrefix = " • ";
+			const prefixWidth = visibleWidth(bulletPrefix);
+			for (const session of this.recentSessions.slice(0, 4)) {
+				const timeSuffix = ` (${session.timeAgo})`;
+				const timeWidth = visibleWidth(timeSuffix);
+				const nameBudget = Math.max(1, rightCol - prefixWidth - timeWidth);
+				const nameVis = visibleWidth(session.name);
+				const name = nameVis > nameBudget ? truncateToWidth(session.name, nameBudget) : session.name;
+				rightLines.push(`${theme.fg("dim", bulletPrefix)}${theme.fg("muted", name)}${theme.fg("dim", timeSuffix)}`);
+			}
+		}
+		// Pad to fixed height (match omp's ~18 rows)
+		while (rightLines.length < 18) {
+			rightLines.push("");
+		}
+		// Also pad left column to match
+		while (leftLines.length < rightLines.length) {
+			leftLines.push("");
+		}
+
+		// ── Build the box ──
+		const lines: string[] = [];
+
+		// Top border with embedded title
+		const title = ` ${APP_NAME} v${this.version} `;
+		const titlePrefix = BOX.horizontal.repeat(3);
+		const titleStyled = theme.fg("dim", titlePrefix) + theme.fg("muted", title);
+		const titleVisLen = visibleWidth(titlePrefix) + visibleWidth(title);
+		const titleSpace = boxWidth - 2;
+		if (titleVisLen >= titleSpace) {
+			lines.push(BOX.topLeft + truncateToWidth(titleStyled, titleSpace) + BOX.topRight);
+		} else {
+			const afterTitle = titleSpace - titleVisLen;
+			lines.push(BOX.topLeft + titleStyled + theme.fg("dim", BOX.horizontal.repeat(afterTitle)) + BOX.topRight);
+		}
+
+		// Content rows
+		const maxRows = showRightColumn ? Math.max(leftLines.length, rightLines.length) : leftLines.length;
+		for (let i = 0; i < maxRows; i++) {
+			const left = fitToWidth(leftLines[i] ?? "", leftCol);
+			if (showRightColumn) {
+				const right = fitToWidth(rightLines[i] ?? "", rightCol);
+				lines.push(BOX.vertical + left + BOX.vertical + right + BOX.vertical);
+			} else {
+				lines.push(BOX.vertical + left + BOX.vertical);
+			}
+		}
+
+		// Bottom border
+		if (showRightColumn) {
+			lines.push(
+				BOX.bottomLeft +
+					theme.fg("dim", BOX.horizontal.repeat(leftCol)) +
+					BOX.teeUp +
+					theme.fg("dim", BOX.horizontal.repeat(rightCol)) +
+					BOX.bottomRight,
+			);
+		} else {
+			lines.push(BOX.bottomLeft + theme.fg("dim", BOX.horizontal.repeat(leftCol)) + BOX.bottomRight);
+		}
+
+		// Tip line below the box
+		if (this.selectedTip) {
+			const tipLabel = "Tip: ";
+			const tipBody = this.selectedTip;
+			const tipText = `${theme.italic(theme.fg("muted", tipLabel))}${theme.fg("dim", tipBody)}`;
+			lines.push("");
+			lines.push(` ${truncateToWidth(tipText, boxWidth - 1)}`);
+		}
+
+		return lines;
+	}
+
+	/** Minimal header for very narrow terminals */
+	private renderMinimalHeader(_termWidth: number): string[] {
+		const logo = theme.bold(theme.fg("accent", APP_NAME)) + theme.fg("dim", ` v${this.version}`);
+		return [logo];
+	}
+}

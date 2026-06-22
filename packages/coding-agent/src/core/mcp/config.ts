@@ -6,6 +6,7 @@
 import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { CONFIG_DIR_NAME } from "../../config.ts";
 
 export interface McpServerConfig {
 	command?: string;
@@ -93,8 +94,8 @@ async function readJson(path: string): Promise<unknown | null> {
  * Load and merge global (~/.pie/agent/mcp.json) and project (.pie/mcp.json) config.
  */
 export async function loadMcpConfig(cwd: string): Promise<McpConfig> {
-	const globalPath = join(homedir(), ".pi", "agent", "mcp.json");
-	const projectPath = join(cwd, ".pi", "mcp.json");
+	const globalPath = join(homedir(), CONFIG_DIR_NAME, "agent", "mcp.json");
+	const projectPath = join(cwd, CONFIG_DIR_NAME, "mcp.json");
 
 	const [globalRaw, projectRaw] = await Promise.all([readJson(globalPath), readJson(projectPath)]);
 

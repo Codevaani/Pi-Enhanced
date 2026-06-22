@@ -47,15 +47,15 @@ describe("buildSystemPrompt", () => {
 		});
 
 		test("instructs models to resolve pie docs and examples under absolute base paths", () => {
-				const prompt = buildSystemPrompt({
-					contextFiles: [],
-					skills: [],
-					cwd: process.cwd(),
-				});
+			const prompt = buildSystemPrompt({
+				contextFiles: [],
+				skills: [],
+				cwd: process.cwd(),
+			});
 
-				expect(prompt).toContain(
-					"- When reading pie docs or examples, resolve docs/... under Additional docs and examples/... under Examples, not the current working directory",
-				);
+			expect(prompt).toContain(
+				"- When reading pie docs or examples, resolve docs/... under Additional docs and examples/... under Examples, not the current working directory",
+			);
 		});
 	});
 

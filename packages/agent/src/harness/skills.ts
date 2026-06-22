@@ -356,11 +356,15 @@ function joinEnvPath(base: string, child: string): string {
 function dirnameEnvPath(path: string): string {
 	const normalized = path.replace(/[/\\]+$/, "");
 	const slashIndex = Math.max(normalized.lastIndexOf("/"), normalized.lastIndexOf("\\"));
-	return slashIndex <= 0 ? "/" : normalized.slice(0, slashIndex);
+	if (slashIndex === -1) return ".";
+	if (slashIndex === 0) return normalized.slice(0, 1);
+	if (/^[A-Za-z]:$/.test(normalized.slice(0, slashIndex))) return normalized.slice(0, slashIndex + 1);
+	return normalized.slice(0, slashIndex);
 }
 
 function basenameEnvPath(path: string): string {
 	const normalized = path.replace(/[/\\]+$/, "");
+	if (normalized === "") return "";
 	const lastSlash = Math.max(normalized.lastIndexOf("/"), normalized.lastIndexOf("\\"));
 	return lastSlash === -1 ? normalized : normalized.slice(lastSlash + 1);
 }
