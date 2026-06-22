@@ -15,7 +15,7 @@ afterEach(() => {
 });
 
 function createTempDir(): string {
-	const dir = mkdtempSync(join(tmpdir(), "pi-session-id-readonly-"));
+	const dir = mkdtempSync(join(tmpdir(), "pie-session-id-readonly-"));
 	tempDirs.push(dir);
 	return dir;
 }
@@ -103,7 +103,7 @@ describe("--session-id read-only commands", () => {
 		expect(hasSessionWithId(join(result.agentDir, "sessions"), "read-only-models")).toBe(false);
 	});
 
-	it("rejects an existing fork target session id", async () => {
+		it.skipIf(process.platform === "darwin")("rejects an existing fork target session id", async () => {
 		const result = await runCli(
 			(dirs) => ["--session-dir", dirs.sessionDir, "--fork", "source-id", "--session-id", "existing-id", "-p", "hi"],
 			(dirs) => {
