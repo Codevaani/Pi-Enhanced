@@ -225,6 +225,10 @@ export function createFindToolDefinition(
 							return;
 						}
 
+						// Normalize searchPath to forward slashes since fd is configured with
+						// --path-separator / (especially important on Windows where native paths use \).
+						const normalizedSearchPath = searchPath.replace(/\\/g, "/");
+
 						// Build fd arguments. --no-require-git makes fd apply hierarchical .gitignore
 						// semantics whether or not the search path is inside a git repository, without
 						// leaking sibling-directory rules the way --ignore-file (a global source) would.
@@ -250,7 +254,7 @@ export function createFindToolDefinition(
 								effectivePattern = `**/${pattern}`;
 							}
 						}
-						args.push("--", effectivePattern, searchPath);
+						args.push("--", effectivePattern, normalizedSearchPath);
 
 						const child = spawn(fdPath, args, { stdio: ["ignore", "pipe", "pipe"] });
 						const rl = createInterface({ input: child.stdout });
@@ -308,15 +312,19 @@ export function createFindToolDefinition(
 							for (const rawLine of lines) {
 								const line = rawLine.replace(/\r$/, "").trim();
 								if (!line) continue;
-								const hadTrailingSlash = line.endsWith("/") || line.endsWith("\\");
-								let relativePath = line;
-								if (line.startsWith(searchPath)) {
-									relativePath = line.slice(searchPath.length + 1);
+								// Normalize to forward slashes for consistent prefix matching
+								// (fd outputs with --path-separator /, but searchPath may use \ on Windows).
+								const normalizedLine = line.replace(/\\/g, "/");
+								const hadTrailingSlash = normalizedLine.endsWith("/");
+								let relativePath = normalizedLine;
+								if (normalizedLine.startsWith(normalizedSearchPath)) {
+									relativePath = normalizedLine.slice(normalizedSearchPath.length + 1);
 								} else {
 									relativePath = path.relative(searchPath, line);
 								}
+								relativePath = toPosixPath(relativePath);
 								if (hadTrailingSlash && !relativePath.endsWith("/")) relativePath += "/";
-								relativized.push(toPosixPath(relativePath));
+								relativized.push(relativePath);
 							}
 
 							const resultLimitReached = relativized.length >= effectiveLimit;

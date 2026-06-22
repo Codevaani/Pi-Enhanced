@@ -85,7 +85,8 @@ describe("createAgentSession session manager defaults", () => {
 
 		const bashTool = session.agent.state.tools.find((tool) => tool.name === "bash");
 		expect(bashTool).toBeTruthy();
-		const result = await bashTool!.execute("test", { command: "pwd" });
+		// Use node -e to get the native path on all platforms (pwd on Windows Git Bash returns Unix-style paths).
+		const result = await bashTool!.execute("test", { command: 'node -e "process.stdout.write(process.cwd())"' });
 		const output = result.content
 			.filter((item): item is { type: "text"; text: string } => item.type === "text")
 			.map((item) => item.text)

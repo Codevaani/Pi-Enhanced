@@ -354,8 +354,8 @@ function joinEnvPath(base: string, child: string): string {
 }
 
 function dirnameEnvPath(path: string): string {
-	const normalized = path.replace(/\/+$/, "");
-	const slashIndex = normalized.lastIndexOf("/");
+	const normalized = path.replace(/[/\\]+$/, "");
+	const slashIndex = Math.max(normalized.lastIndexOf("/"), normalized.lastIndexOf("\\"));
 	return slashIndex <= 0 ? "/" : normalized.slice(0, slashIndex);
 }
 
