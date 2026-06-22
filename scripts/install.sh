@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Install pie - AI coding assistant
-# Usage: curl -fsSL https://github.com/Codevaani/Pi-Enhanced/releases/latest/download/install.sh | bash
+# Usage: curl -fsSL https://github.com/Codevaani/Pi-Enhanced/releases/download/v1.0.0/install.sh | bash
 #
 # Supported platforms:
 #   Linux (x64, arm64), macOS (x64, arm64), Windows (x64, arm64) via WSL/Cygwin/MSYS2
@@ -49,14 +49,22 @@ detect_platform() {
 }
 
 # Resolve the download URL
+resolve_release_tag() {
+    if [ "$VERSION" != "latest" ]; then
+        echo "$VERSION"
+        return
+    fi
+    curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" | sed -n 's/.*"tag_name":[[:space:]]*"\([^"]*\)".*/\1/p' | head -1
+}
+
 resolve_url() {
     local platform="$1"
-
-    if [ "$VERSION" = "latest" ]; then
-        echo "https://github.com/$REPO/releases/latest/download/$platform"
-    else
-        echo "https://github.com/$REPO/releases/download/$VERSION/$platform"
+    local tag
+    tag=$(resolve_release_tag)
+    if [ -z "$tag" ]; then
+        error "Could not resolve latest release tag"
     fi
+    echo "https://github.com/$REPO/releases/download/$tag/$platform"
 }
 
 # Detect install directory

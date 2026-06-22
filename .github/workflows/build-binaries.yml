@@ -104,11 +104,15 @@ jobs:
           if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
             gh release edit "${RELEASE_TAG}" \
               --title "${RELEASE_TAG}" \
-              --notes "$BODY"
+              --notes "$BODY" \
+              --draft=false \
+              --latest
             gh release upload "${RELEASE_TAG}" "${release_assets[@]}" --clobber
           else
             gh release create "${RELEASE_TAG}" \
               --title "${RELEASE_TAG}" \
               --notes "$BODY" \
+              --verify-tag \
+              --latest \
               "${release_assets[@]}"
           fi

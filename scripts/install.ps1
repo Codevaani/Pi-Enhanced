@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 # Install pie - AI coding assistant for Windows
-# Usage: iwr -Uri https://github.com/Codevaani/Pi-Enhanced/releases/latest/download/install.ps1 -UseBasicParsing | iex
+# Usage: iwr -Uri https://github.com/Codevaani/Pi-Enhanced/releases/download/v1.0.0/install.ps1 -UseBasicParsing | iex
 
 param(
     [string]$Version = "latest",
@@ -25,12 +25,16 @@ function Get-Platform {
     return "pie-$os-$arch.zip"
 }
 
-# Resolve download URL
+# Resolve release tag and download URL
+function Get-ReleaseTag {
+    if ($Version -ne "latest") { return $Version }
+    $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/latest"
+    return $release.tag_name
+}
+
 function Get-DownloadUrl($platform) {
-    if ($Version -eq "latest") {
-        return "https://github.com/$Repo/releases/latest/download/$platform"
-    }
-    return "https://github.com/$Repo/releases/download/$Version/$platform"
+    $tag = Get-ReleaseTag
+    return "https://github.com/$Repo/releases/download/$tag/$platform"
 }
 
 # Detect install directory

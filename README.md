@@ -25,13 +25,13 @@ The open-source, extensible coding agent CLI. Built for developers who want full
 ### Linux / macOS (curl bash)
 
 ```bash
-curl -fsSL https://github.com/Codevaani/Pi-Enhanced/releases/latest/download/install.sh | bash
+curl -fsSL https://github.com/Codevaani/Pi-Enhanced/releases/download/v1.0.0/install.sh | bash
 ```
 
 ### Windows (PowerShell)
 
 ```powershell
-iwr -Uri https://github.com/Codevaani/Pi-Enhanced/releases/latest/download/install.ps1 -UseBasicParsing | iex
+iwr -Uri https://github.com/Codevaani/Pi-Enhanced/releases/download/v1.0.0/install.ps1 -UseBasicParsing | iex
 ```
 
 ### Manual
