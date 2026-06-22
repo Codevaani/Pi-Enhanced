@@ -33,7 +33,7 @@ jobs:
       - name: Install system dependencies (macOS)
         if: runner.os == 'macOS'
         run: |
-          brew install pkg-config cairo pango jpeg libgif librsvg fd ripgrep
+          brew install pkg-config cairo pango jpeg libnsgif librsvg fd ripgrep
 
       - name: Install system dependencies (Windows)
         if: runner.os == 'Windows'
