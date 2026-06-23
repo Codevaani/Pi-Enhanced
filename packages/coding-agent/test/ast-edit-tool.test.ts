@@ -1,8 +1,16 @@
+import { spawnSync } from "node:child_process";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { createAstEditTool, createAstEditToolDefinition } from "../src/core/tools/ast-edit.ts";
+
+function hasSg(): boolean {
+	const result = spawnSync("sg", ["--version"], { stdio: "pipe" });
+	return result.error === undefined || result.error === null;
+}
+
+const itWhenSg = hasSg() ? it : it.skip;
 
 function textOutput(result: { content: Array<{ type: string; text?: string }> }): string {
 	return result.content
@@ -32,7 +40,7 @@ describe("ast_edit tool", () => {
 		expect(definition.description).toContain("AST pattern");
 	});
 
-	it("previews a structural rewrite without modifying files", async () => {
+	itWhenSg("previews a structural rewrite without modifying files", async () => {
 		const dir = await createTempDir();
 		const file = join(dir, "example.ts");
 		const original = 'function f() {\n\tconsole.log(\n\t\t"x"\n\t);\n}\n';
@@ -53,7 +61,7 @@ describe("ast_edit tool", () => {
 		expect(textOutput(result)).toContain("logger.info");
 	});
 
-	it("applies a structural rewrite when mode is apply", async () => {
+	itWhenSg("applies a structural rewrite when mode is apply", async () => {
 		const dir = await createTempDir();
 		const file = join(dir, "example.ts");
 		await writeFile(file, 'function f() {\n\tconsole.log(\n\t\t"x"\n\t);\n}\n');
@@ -73,7 +81,7 @@ describe("ast_edit tool", () => {
 		expect(textOutput(result)).toContain("Applied AST rewrite to 1 match(es).");
 	});
 
-	it("returns no matches without modifying files", async () => {
+	itWhenSg("returns no matches without modifying files", async () => {
 		const dir = await createTempDir();
 		const file = join(dir, "example.ts");
 		const original = "function f() {}\n";
@@ -93,7 +101,7 @@ describe("ast_edit tool", () => {
 		expect(textOutput(result)).toBe("No matches found");
 	});
 
-	it("refuses to apply when matches exceed the limit", async () => {
+	itWhenSg("refuses to apply when matches exceed the limit", async () => {
 		const dir = await createTempDir();
 		const file = join(dir, "example.ts");
 		const original = 'console.log("a");\nconsole.log("b");\n';

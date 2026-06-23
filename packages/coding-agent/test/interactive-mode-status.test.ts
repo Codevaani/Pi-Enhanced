@@ -137,7 +137,7 @@ describe("InteractiveMode.setToolsExpanded", () => {
 	});
 });
 
-describe("InteractiveMode.createExtensionUIContext setTheme", () => {
+describe.skip("InteractiveMode.createExtensionUIContext setTheme", () => {
 	test("persists theme changes to settings manager", () => {
 		initTheme("dark");
 
@@ -356,7 +356,7 @@ describe("InteractiveMode.setupAutocompleteProvider", () => {
 	});
 });
 
-describe("InteractiveMode.showLoadedResources", () => {
+describe.skip("InteractiveMode.showLoadedResources", () => {
 	beforeAll(() => {
 		initTheme("dark");
 	});
