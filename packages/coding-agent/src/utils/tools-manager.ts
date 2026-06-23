@@ -68,6 +68,25 @@ const TOOLS: Record<string, ToolConfig> = {
 			return null;
 		},
 	},
+	sg: {
+		name: "ast-grep",
+		repo: "ast-grep/ast-grep",
+		binaryName: "sg",
+		systemBinaryNames: ["sg"],
+		tagPrefix: "v",
+		getAssetName: (version, plat, architecture) => {
+			const archMap: Record<string, string> = { x64: "x86_64", arm64: "aarch64" };
+			const arch = archMap[architecture] || architecture;
+			if (plat === "darwin") {
+				return `ast-grep-v${version}-${arch}-apple-darwin.tar.gz`;
+			} else if (plat === "linux") {
+				return `ast-grep-v${version}-${arch}-unknown-linux-gnu.tar.gz`;
+			} else if (plat === "win32") {
+				return `ast-grep-v${version}-${arch}-pc-windows-msvc.zip`;
+			}
+			return null;
+		},
+	},
 };
 
 // Check if a command exists in PATH by trying to run it
@@ -82,7 +101,7 @@ function commandExists(cmd: string): boolean {
 }
 
 // Get the path to a tool (system-wide or in our tools dir)
-export function getToolPath(tool: "fd" | "rg"): string | null {
+export function getToolPath(tool: "fd" | "rg" | "sg"): string | null {
 	const config = TOOLS[tool];
 	if (!config) return null;
 
@@ -238,7 +257,7 @@ function extractZipArchive(archivePath: string, extractDir: string, assetName: s
 }
 
 // Download and install a tool
-async function downloadTool(tool: "fd" | "rg"): Promise<string> {
+async function downloadTool(tool: "fd" | "rg" | "sg"): Promise<string> {
 	const config = TOOLS[tool];
 	if (!config) throw new Error(`Unknown tool: ${tool}`);
 
@@ -319,11 +338,12 @@ async function downloadTool(tool: "fd" | "rg"): Promise<string> {
 const TERMUX_PACKAGES: Record<string, string> = {
 	fd: "fd",
 	rg: "ripgrep",
+	sg: "ast-grep",
 };
 
 // Ensure a tool is available, downloading if necessary
 // Returns the path to the tool, or null if unavailable
-export async function ensureTool(tool: "fd" | "rg", silent: boolean = false): Promise<string | undefined> {
+export async function ensureTool(tool: "fd" | "rg" | "sg", silent: boolean = false): Promise<string | undefined> {
 	const existingPath = getToolPath(tool);
 	if (existingPath) {
 		return existingPath;
