@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Install pie - AI coding assistant
-# Usage: curl -fsSL https://github.com/Codevaani/Pi-Enhanced/releases/download/v1.0.0/install.sh | bash
+# Usage: curl -fsSL https://github.com/Codevaani/Pi-Enhanced/releases/latest/download/install.sh | bash
 #
 # Supported platforms:
 #   Linux (x64, arm64), macOS (x64, arm64), Windows (x64, arm64) via WSL/Cygwin/MSYS2
@@ -49,22 +49,14 @@ detect_platform() {
 }
 
 # Resolve the download URL
-resolve_release_tag() {
-    if [ "$VERSION" != "latest" ]; then
-        echo "$VERSION"
-        return
-    fi
-    curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" | sed -n 's/.*"tag_name":[[:space:]]*"\([^"]*\)".*/\1/p' | head -1
-}
-
 resolve_url() {
     local platform="$1"
-    local tag
-    tag=$(resolve_release_tag)
-    if [ -z "$tag" ]; then
-        error "Could not resolve latest release tag"
+
+    if [ "$VERSION" = "latest" ]; then
+        echo "https://github.com/$REPO/releases/latest/download/$platform"
+    else
+        echo "https://github.com/$REPO/releases/download/$VERSION/$platform"
     fi
-    echo "https://github.com/$REPO/releases/download/$tag/$platform"
 }
 
 # Detect install directory
@@ -100,38 +92,56 @@ main() {
     tmpdir=$(mktemp -d)
     cd "$tmpdir"
 
-    local package_dir
     if echo "$platform" | grep -q "\.zip$"; then
         curl -fsSL "$url" -o pie.zip
         unzip -q pie.zip -d pie-extracted
-        package_dir="pie-extracted"
+        # Find the binary (could be pi.exe or pie.exe in the extracted dir)
+        local binary
+        binary=$(find pie-extracted -name "pie.exe" -o -name "pi.exe" 2>/dev/null | head -1)
+        if [ -z "$binary" ]; then
+            error "Binary not found in the archive"
+        fi
+        mv "$binary" pie.exe
     else
         curl -fsSL "$url" | tar -xz
-        package_dir="pie"
-    fi
-
-    local binary
-    binary=$(find "$package_dir" -name "pie" -o -name "pi" -o -name "pie.exe" -o -name "pi.exe" 2>/dev/null | head -1)
-    if [ -z "$binary" ]; then
-        error "Binary not found in the archive"
-    fi
-
-    local binary_name
-    binary_name=$(basename "$binary")
-    if [ "$binary_name" = "pi" ]; then
-        mv "$binary" "$(dirname "$binary")/pie"
-    elif [ "$binary_name" = "pi.exe" ]; then
-        mv "$binary" "$(dirname "$binary")/pie.exe"
+        # After extraction, the binary is inside pie/ directory
+        if [ -f "pie/pie" ]; then
+            mv pie/pie .
+        elif [ -f "pie/pi" ]; then
+            mv pie/pi .
+        else
+            error "Binary not found in the archive"
+        fi
+        rm -rf pie
     fi
 
     local install_dir
     install_dir=$(detect_install_dir)
 
-    chmod +x "$package_dir"/pie* 2>/dev/null || true
+    # Determine binary name
+    local binary_name="pie"
+    if echo "$platform" | grep -q "windows"; then
+        if [ -f "pie.exe" ]; then
+            binary_name="pie.exe"
+        else
+            binary_name="pi.exe"
+        fi
+    else
+        if [ -f "pie" ]; then
+            binary_name="pie"
+        else
+            binary_name="pi"
+        fi
+    fi
+
+    # Rename to pie
+    if [ "$binary_name" != "pie" ] && [ "$binary_name" != "pie.exe" ]; then
+        mv "$binary_name" "pie${binary_name##*pi}"
+    fi
+
+    chmod +x pie*
     mkdir -p "$install_dir"
-    info "Removing existing installation from: $install_dir"
-    find "$install_dir" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
-    cp -R "$package_dir"/. "$install_dir/"
+    mv pie* "$install_dir/"
 
     cd /
     rm -rf "$tmpdir"

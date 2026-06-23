@@ -149,7 +149,8 @@ export type ThemeColor =
 	| "thinkingMedium"
 	| "thinkingHigh"
 	| "thinkingXhigh"
-	| "bashMode";
+	| "bashMode"
+	| "statusLineSep";
 
 export type ThemeBg =
 	| "selectedBg"
@@ -157,7 +158,8 @@ export type ThemeBg =
 	| "customMessageBg"
 	| "toolPendingBg"
 	| "toolSuccessBg"
-	| "toolErrorBg";
+	| "toolErrorBg"
+	| "statusLineBg";
 
 type ColorMode = "truecolor" | "256color";
 
@@ -430,12 +432,20 @@ let BUILTIN_THEMES: Record<string, ThemeJson> | undefined;
 function getBuiltinThemes(): Record<string, ThemeJson> {
 	if (!BUILTIN_THEMES) {
 		const themesDir = getThemesDir();
-		const darkPath = path.join(themesDir, "dark.json");
-		const lightPath = path.join(themesDir, "light.json");
-		BUILTIN_THEMES = {
-			dark: JSON.parse(fs.readFileSync(darkPath, "utf-8")) as ThemeJson,
-			light: JSON.parse(fs.readFileSync(lightPath, "utf-8")) as ThemeJson,
-		};
+		BUILTIN_THEMES = {};
+		if (!fs.existsSync(themesDir)) return BUILTIN_THEMES;
+		for (const entry of fs.readdirSync(themesDir)) {
+			if (!entry.endsWith(".json") || entry === "theme-schema.json") continue;
+			const filePath = path.join(themesDir, entry);
+			try {
+				const theme = JSON.parse(fs.readFileSync(filePath, "utf-8")) as ThemeJson;
+				if (theme.name) {
+					BUILTIN_THEMES[theme.name] = theme;
+				}
+			} catch {
+				// Skip invalid theme files
+			}
+		}
 	}
 	return BUILTIN_THEMES;
 }
@@ -586,6 +596,7 @@ function createTheme(themeJson: ThemeJson, mode?: ColorMode, sourcePath?: string
 		"toolPendingBg",
 		"toolSuccessBg",
 		"toolErrorBg",
+		"statusLineBg",
 	]);
 	for (const [key, value] of Object.entries(resolvedColors)) {
 		if (bgColorKeys.has(key)) {

@@ -39,6 +39,7 @@ export const BUILTIN_SLASH_COMMANDS: ReadonlyArray<BuiltinSlashCommand> = [
 	{ name: "compact", description: "Manually compact the session context" },
 	{ name: "resume", description: "Resume a different session" },
 	{ name: "reload", description: "Reload keybindings, extensions, skills, prompts, and themes" },
+	{ name: "themes", description: "Open theme selector to change the UI theme" },
 	{ name: "quit", description: `Quit ${APP_NAME}` },
 	{ name: "mcp", description: "Show MCP server status. /mcp <name> for detail" },
 	{ name: "mcp:start", description: "Start an MCP server. Usage: /mcp:start <name>" },

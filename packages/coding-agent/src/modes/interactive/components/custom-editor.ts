@@ -1,5 +1,17 @@
-import { Editor, type EditorOptions, type EditorTheme, type TUI } from "@earendil-works/pie-tui";
+import {
+	Editor,
+	type EditorOptions,
+	type EditorTheme,
+	type TUI,
+	truncateToWidth,
+	visibleWidth,
+} from "@earendil-works/pie-tui";
 import type { AppKeybinding, KeybindingsManager } from "../../../core/keybindings.ts";
+
+export interface StatusLineContent {
+	left: string;
+	right: string;
+}
 
 /**
  * Custom editor that handles app-level keybindings for coding-agent.
@@ -14,6 +26,39 @@ export class CustomEditor extends Editor {
 	public onPasteImage?: () => void;
 	/** Handler for extension-registered shortcuts. Returns true if handled. */
 	public onExtensionShortcut?: (data: string) => boolean;
+
+	// Status line content for the top border (styled left + right segments)
+	private statusLine: StatusLineContent = { left: "", right: "" };
+
+	/** Set the status line content to display in the top border */
+	setStatusLine(content: string | StatusLineContent): void {
+		if (typeof content === "string") {
+			this.statusLine = { left: "", right: content };
+		} else {
+			this.statusLine = content;
+		}
+	}
+
+	/** Get the status line content */
+	getStatusLine(): string {
+		return this.statusLine.right || this.statusLine.left;
+	}
+
+	render(width: number): string[] {
+		const lines = super.render(width);
+		if (lines.length === 0 || (!this.statusLine.left && !this.statusLine.right)) return lines;
+
+		// Build the status line: left + gap fill + right
+		const { left, right } = this.statusLine;
+		const leftWidth = left ? visibleWidth(left) : 0;
+		const rightWidth = right ? visibleWidth(right) : 0;
+		const gapWidth = Math.max(0, width - leftWidth - rightWidth);
+		const gapFill = "\x1b[0m\u2500".repeat(Math.max(0, gapWidth - 1));
+		const statusLine = left + gapFill + right;
+
+		lines[0] = truncateToWidth(statusLine, width);
+		return lines;
+	}
 
 	constructor(tui: TUI, theme: EditorTheme, keybindings: KeybindingsManager, options?: EditorOptions) {
 		super(tui, theme, options);

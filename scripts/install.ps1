@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 # Install pie - AI coding assistant for Windows
-# Usage: iwr -Uri https://github.com/Codevaani/Pi-Enhanced/releases/download/v1.0.0/install.ps1 -UseBasicParsing | iex
+# Usage: iwr -Uri https://github.com/Codevaani/Pi-Enhanced/releases/latest/download/install.ps1 -UseBasicParsing | iex
 
 param(
     [string]$Version = "latest",
@@ -17,39 +17,20 @@ function Write-Error($msg) { Write-Host "==> $msg" -ForegroundColor Red; exit 1 
 # Detect platform
 function Get-Platform {
     $os = "windows"
-    $archCandidates = @(
-        [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture,
-        $env:PROCESSOR_ARCHITEW6432,
-        $env:PROCESSOR_ARCHITECTURE
-    )
-
-    foreach ($candidate in $archCandidates) {
-        if ($null -eq $candidate) { continue }
-        $value = $candidate.ToString().Trim()
-        if (-not $value) { continue }
-        $arch = switch ($value.ToUpperInvariant()) {
-            "X64"   { "x64" }
-            "AMD64" { "x64" }
-            "ARM64" { "arm64" }
-            default { $null }
-        }
-        if ($arch) { return "pie-$os-$arch.zip" }
+    $arch = switch ([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture) {
+        "X64"   { "x64" }
+        "Arm64" { "arm64" }
+        default { Write-Error "Unsupported architecture: $_" }
     }
-
-    Write-Warn "Could not detect CPU architecture; defaulting to x64."
-    return "pie-$os-x64.zip"
+    return "pie-$os-$arch.zip"
 }
 
-# Resolve release tag and download URL
-function Get-ReleaseTag {
-    if ($Version -ne "latest") { return $Version }
-    $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/latest"
-    return $release.tag_name
-}
-
+# Resolve download URL
 function Get-DownloadUrl($platform) {
-    $tag = Get-ReleaseTag
-    return "https://github.com/$Repo/releases/download/$tag/$platform"
+    if ($Version -eq "latest") {
+        return "https://github.com/$Repo/releases/latest/download/$platform"
+    }
+    return "https://github.com/$Repo/releases/download/$Version/$platform"
 }
 
 # Detect install directory
@@ -93,12 +74,9 @@ function Main {
             Move-Item $binary.FullName (Join-Path $binary.Directory $targetName) -Force
         }
 
-        $packageDir = $binary.Directory.FullName
         $installDir = Get-InstallDir
         New-Item -ItemType Directory -Force -Path $installDir | Out-Null
-        Write-Info "Removing existing installation from: $installDir"
-        Get-ChildItem -Path $installDir -Force | Remove-Item -Recurse -Force
-        Copy-Item -Path (Join-Path $packageDir "*") -Destination $installDir -Recurse -Force
+        Copy-Item (Join-Path $binary.Directory $targetName) (Join-Path $installDir $targetName) -Force
 
         Write-Info "Installed to: $installDir\pie.exe"
 

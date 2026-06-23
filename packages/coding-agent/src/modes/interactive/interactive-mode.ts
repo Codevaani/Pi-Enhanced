@@ -86,7 +86,7 @@ import { type SessionContext, SessionManager } from "../../core/session-manager.
 import { BUILTIN_SLASH_COMMANDS } from "../../core/slash-commands.ts";
 import type { SourceInfo } from "../../core/source-info.ts";
 import { isInstallTelemetryEnabled } from "../../core/telemetry.ts";
-import { getTodos, isTodoWidgetEnabled, setTodoWidgetEnabled } from "../../core/tools/todo.ts";
+import { getTodoPhases, isTodoWidgetEnabled, setTodoWidgetEnabled } from "../../core/tools/todo.ts";
 import type { TruncationResult } from "../../core/tools/truncate.ts";
 import { hasTrustRequiringProjectResources, ProjectTrustStore } from "../../core/trust-manager.ts";
 import { getChangelogPath, getNewEntries, normalizeChangelogLinks, parseChangelog } from "../../utils/changelog.ts";
@@ -114,7 +114,7 @@ import { ExtensionEditorComponent } from "./components/extension-editor.ts";
 import { ExtensionInputComponent } from "./components/extension-input.ts";
 import { ExtensionSelectorComponent } from "./components/extension-selector.ts";
 import { FooterComponent } from "./components/footer.ts";
-import { formatKeyText, keyDisplayText, keyHint, keyText, rawKeyHint } from "./components/keybinding-hints.ts";
+import { formatKeyText, keyDisplayText, keyText } from "./components/keybinding-hints.ts";
 import { LoginDialogComponent } from "./components/login-dialog.ts";
 import { ModelSelectorComponent } from "./components/model-selector.ts";
 import { type AuthSelectorProvider, OAuthSelectorComponent } from "./components/oauth-selector.ts";
@@ -122,11 +122,13 @@ import { ScopedModelsSelectorComponent } from "./components/scoped-models-select
 import { SessionSelectorComponent } from "./components/session-selector.ts";
 import { SettingsSelectorComponent } from "./components/settings-selector.ts";
 import { SkillInvocationMessageComponent } from "./components/skill-invocation-message.ts";
+import { ThemeSelectorComponent } from "./components/theme-selector.ts";
 import { ToolExecutionComponent } from "./components/tool-execution.ts";
 import { TreeSelectorComponent } from "./components/tree-selector.ts";
 import { TrustSelectorComponent } from "./components/trust-selector.ts";
 import { UserMessageComponent } from "./components/user-message.ts";
 import { UserMessageSelectorComponent } from "./components/user-message-selector.ts";
+import { WelcomeComponent, type WelcomeResourceSummary, type WelcomeUpdateNotice } from "./components/welcome.ts";
 import {
 	detectTerminalBackgroundTheme,
 	getAvailableThemes,
@@ -152,6 +154,15 @@ interface Expandable {
 
 function isExpandable(obj: unknown): obj is Expandable {
 	return typeof obj === "object" && obj !== null && "setExpanded" in obj && typeof obj.setExpanded === "function";
+}
+
+/** Format token counts for compact display */
+function formatTokens(count: number): string {
+	if (count < 1000) return count.toString();
+	if (count < 10000) return `${(count / 1000).toFixed(1)}k`;
+	if (count < 1000000) return `${Math.round(count / 1000)}k`;
+	if (count < 10000000) return `${(count / 1000000).toFixed(1)}M`;
+	return `${Math.round(count / 1000)}M`;
 }
 
 class ExpandableText extends Text implements Expandable {
@@ -253,7 +264,7 @@ export interface InteractiveModeOptions {
 	migratedProviders?: string[];
 	/** Warning message if session model couldn't be restored */
 	modelFallbackMessage?: string;
-	/** Cwd to trust after reload if it gained a .pi directory during this implicitly trusted session. */
+	/** Cwd to trust after reload if it gained a .pie directory during this implicitly trusted session. */
 	autoTrustOnReloadCwd?: string;
 	/** Initial message to send on startup (can include @file content) */
 	initialMessage?: string;
@@ -434,6 +445,82 @@ export class InteractiveMode {
 		initTheme(this.settingsManager.getTheme(), true);
 	}
 
+	/** Update the editor's top border with styled status bar */
+	private buildWelcomeStartupResources(): WelcomeResourceSummary {
+		const contextFiles = this.session.resourceLoader
+			.getAgentsFiles()
+			.agentsFiles.map((f) => this.formatContextPath(f.path));
+		const skills = this.session.resourceLoader.getSkills().skills.map((skill) => skill.name);
+		const extensions = this.getCompactExtensionLabels(
+			this.session.resourceLoader.getExtensions().extensions.map((extension) => ({
+				path: extension.path,
+				sourceInfo: extension.sourceInfo,
+			})),
+		);
+		return {
+			context: contextFiles,
+			skills,
+			extensions,
+		};
+	}
+
+	private updateWelcomeUpdateNotice(updateNotice: WelcomeUpdateNotice | undefined): void {
+		const header = this.builtInHeader;
+		if (header instanceof WelcomeComponent) {
+			header.setUpdateNotice(updateNotice);
+			this.ui.requestRender();
+		}
+	}
+
+	private updateWelcomeStartupResources(): void {
+		const header = this.builtInHeader;
+		if (header instanceof WelcomeComponent) {
+			header.setResources(this.buildWelcomeStartupResources());
+			this.ui.requestRender();
+		}
+	}
+
+	private updateEditorStatusLine(): void {
+		const state = this.session.state;
+		const modelName = state.model?.id ?? "no-model";
+		const thinkingLevel = state.thinkingLevel || "off";
+		const cwd = this.session.sessionManager.getCwd();
+		const home = process.env.HOME || process.env.USERPROFILE;
+		const shortCwd = home && cwd.startsWith(home) ? `~${cwd.slice(home.length)}` : cwd;
+
+		// Context usage
+		const contextUsage = this.session.getContextUsage();
+		const contextWindow = contextUsage?.contextWindow ?? state.model?.contextWindow ?? 0;
+		const contextPercent = contextUsage?.percent !== null ? (contextUsage?.percent?.toFixed(1) ?? "0") : "?";
+		const autoIndicator = this.session.autoCompactionEnabled ? " (auto)" : "";
+
+		// Build status line with segments
+		const bgAnsi = theme.getBgAnsi("statusLineBg");
+		const fgAnsi = theme.getFgAnsi("text");
+		const sepAnsi = theme.getFgAnsi("statusLineSep");
+		const accentAnsi = theme.getFgAnsi("accent");
+		const reset = "\x1b[0m";
+
+		// Left segments (model + thinking)
+		const leftParts: string[] = [];
+		const modelPart = `${accentAnsi}\u03c0${fgAnsi} >${accentAnsi} \u2ae2${fgAnsi} ${modelName}`;
+		leftParts.push(modelPart);
+		if (state.model?.reasoning) {
+			leftParts.push(`\u25d5 ${thinkingLevel}`);
+		}
+
+		// Right segments (cwd + context)
+		const rightParts: string[] = [];
+		rightParts.push(`\ud83d\uddd1 ${shortCwd}`);
+		rightParts.push(`\u25ab ${contextPercent}%/${formatTokens(contextWindow)}${autoIndicator}`);
+
+		const sep = ` ${sepAnsi}\u2502${fgAnsi} `;
+		const left = `${bgAnsi}${fgAnsi} ${leftParts.join(sep)} ${reset}`;
+		const right = `${bgAnsi}${fgAnsi} ${rightParts.join(sep)} ${reset}`;
+
+		this.defaultEditor.setStatusLine({ left, right });
+		this.ui.requestRender();
+	}
 	private async detectThemeIfUnset(): Promise<void> {
 		if (this.settingsManager.getTheme()) {
 			return;
@@ -676,60 +763,24 @@ export class InteractiveMode {
 
 		await this.detectThemeIfUnset();
 
-		// Add header with keybindings from config (unless silenced)
+		// Add header with welcome box (unless silenced)
 		if (this.options.verbose || !this.settingsManager.getQuietStartup()) {
-			const logo = theme.bold(theme.fg("accent", APP_NAME)) + theme.fg("dim", ` v${this.version}`);
+			const modelName = this.session.model?.id ?? "no-model";
+			const providerName = this.session.model?.provider ?? "";
+			const startupResources = this.buildWelcomeStartupResources();
 
-			// Build startup instructions using keybinding hint helpers
-			const hint = (keybinding: AppKeybinding, description: string) => keyHint(keybinding, description);
+			const welcomeComponent = new WelcomeComponent({
+				version: this.version,
+				modelName,
+				providerName,
+				resources: startupResources,
+			});
 
-			const expandedInstructions = [
-				hint("app.interrupt", "to interrupt"),
-				hint("app.clear", "to clear"),
-				rawKeyHint(`${keyText("app.clear")} twice`, "to exit"),
-				hint("app.exit", "to exit (empty)"),
-				hint("app.suspend", "to suspend"),
-				keyHint("tui.editor.deleteToLineEnd", "to delete to end"),
-				hint("app.thinking.cycle", "to cycle thinking level"),
-				rawKeyHint(`${keyText("app.model.cycleForward")}/${keyText("app.model.cycleBackward")}`, "to cycle models"),
-				hint("app.model.select", "to select model"),
-				hint("app.tools.expand", "to expand tools"),
-				hint("app.thinking.toggle", "to expand thinking"),
-				hint("app.editor.external", "for external editor"),
-				rawKeyHint("/", "for commands"),
-				rawKeyHint("!", "to run bash"),
-				rawKeyHint("!!", "to run bash (no context)"),
-				hint("app.message.followUp", "to queue follow-up"),
-				hint("app.message.dequeue", "to edit all queued messages"),
-				hint("app.clipboard.pasteImage", "to paste image"),
-				rawKeyHint("drop files", "to attach"),
-			].join("\n");
-			const compactInstructions = [
-				hint("app.interrupt", "interrupt"),
-				rawKeyHint(`${keyText("app.clear")}/${keyText("app.exit")}`, "clear/exit"),
-				rawKeyHint("/", "commands"),
-				rawKeyHint("!", "bash"),
-				hint("app.tools.expand", "more"),
-			].join(theme.fg("muted", " · "));
-			const compactOnboarding = theme.fg(
-				"dim",
-				`Press ${keyText("app.tools.expand")} to show full startup help and loaded resources.`,
-			);
-			const onboarding = theme.fg(
-				"dim",
-				`Pie can explain its own features and look up its docs. Ask it how to use or extend Pie.`,
-			);
-			this.builtInHeader = new ExpandableText(
-				() => `${logo}\n${compactInstructions}\n${compactOnboarding}\n\n${onboarding}`,
-				() => `${logo}\n${expandedInstructions}\n\n${onboarding}`,
-				this.getStartupExpansionState(),
-				1,
-				0,
-			);
+			this.builtInHeader = welcomeComponent;
 
 			// Setup UI layout
 			this.headerContainer.addChild(new Spacer(1));
-			this.headerContainer.addChild(this.builtInHeader);
+			this.headerContainer.addChild(this.builtInHeader!);
 			this.headerContainer.addChild(new Spacer(1));
 		} else {
 			// Minimal header when silenced
@@ -737,6 +788,9 @@ export class InteractiveMode {
 			this.headerContainer.addChild(this.builtInHeader);
 		}
 		this.ui.requestRender();
+
+		// Update editor status line
+		this.updateEditorStatusLine();
 
 		// Initialize extensions first so resources are shown before messages
 		await this.rebindCurrentSession();
@@ -780,10 +834,13 @@ export class InteractiveMode {
 	async run(): Promise<void> {
 		await this.init();
 
-		// Start version check asynchronously
+		// Start version check asynchronously (header shows update notice)
 		checkForNewPiVersion(this.version).then((newRelease) => {
 			if (newRelease) {
-				this.showNewVersionNotification(newRelease);
+				this.updateWelcomeUpdateNotice({
+					version: newRelease.version,
+					command: `${APP_NAME} update`,
+				});
 			}
 		});
 
@@ -987,12 +1044,6 @@ export class InteractiveMode {
 			result = `~${result.slice(home.length)}`;
 		}
 
-		return result;
-	}
-
-	private formatExtensionDisplayPath(path: string): string {
-		let result = this.formatDisplayPath(path);
-		result = result.replace(/\/index\.ts$/, "").replace(/\/index\.js$/, "");
 		return result;
 	}
 
@@ -1411,31 +1462,7 @@ export class InteractiveMode {
 		}
 
 		if (showListing) {
-			const contextFiles = this.session.resourceLoader.getAgentsFiles().agentsFiles;
-			if (contextFiles.length > 0) {
-				this.chatContainer.addChild(new Spacer(1));
-				const contextList = contextFiles
-					.map((f) => theme.fg("dim", `  ${this.formatDisplayPath(f.path)}`))
-					.join("\n");
-				const contextCompactList = formatCompactList(
-					contextFiles.map((contextFile) => this.formatContextPath(contextFile.path)),
-					{ sort: false },
-				);
-				addLoadedSection("Context", contextCompactList, contextList);
-			}
-
-			const skills = skillsResult.skills;
-			if (skills.length > 0) {
-				const groups = this.buildScopeGroups(
-					skills.map((skill) => ({ path: skill.filePath, sourceInfo: skill.sourceInfo })),
-				);
-				const skillList = this.formatScopeGroups(groups, {
-					formatPath: (item) => this.formatDisplayPath(item.path),
-					formatPackagePath: (item) => this.getShortPath(item.path, item.sourceInfo),
-				});
-				const skillCompactList = formatCompactList(skills.map((skill) => skill.name));
-				addLoadedSection("Skills", skillCompactList, skillList);
-			}
+			// Context and Skills are now shown in the welcome header right column
 
 			const templates = this.session.promptTemplates;
 			if (templates.length > 0) {
@@ -1457,16 +1484,7 @@ export class InteractiveMode {
 				addLoadedSection("Prompts", promptCompactList, templateList);
 			}
 
-			if (extensions.length > 0) {
-				const groups = this.buildScopeGroups(extensions);
-				const extList = this.formatScopeGroups(groups, {
-					formatPath: (item) => this.formatExtensionDisplayPath(item.path),
-					formatPackagePath: (item) =>
-						this.formatExtensionDisplayPath(this.getShortPath(item.path, item.sourceInfo)),
-				});
-				const extensionCompactList = formatCompactList(this.getCompactExtensionLabels(extensions));
-				addLoadedSection("Extensions", extensionCompactList, extList, "mdHeading");
-			}
+			// Extensions are now shown in the welcome header right column
 
 			// Show loaded themes (excluding built-in)
 			const loadedThemes = themesResult.themes;
@@ -1658,6 +1676,7 @@ export class InteractiveMode {
 		await this.updateAvailableProviderCount();
 		this.updateEditorBorderColor();
 		this.updateTerminalTitle();
+		this.updateWelcomeStartupResources();
 	}
 
 	private async handleFatalRuntimeError(prefix: string, error: unknown): Promise<never> {
@@ -1950,36 +1969,53 @@ export class InteractiveMode {
 
 		if (!isTodoWidgetEnabled()) return;
 
-		const todos = getTodos();
-		if (todos.length === 0) return;
+		const phases = getTodoPhases();
+		const totalTasks = phases.reduce((sum, p) => sum + p.tasks.length, 0);
+		if (totalTasks === 0) return;
 
 		const width = this.ui.terminal.columns;
-		const total = todos.length;
-		const doneCount = todos.filter((t) => t.done).length;
-		const pendingCount = total - doneCount;
+		const doneCount = phases.reduce((sum, p) => sum + p.tasks.filter((t) => t.status === "completed").length, 0);
+		const openCount = totalTasks - doneCount;
 
-		// Build header: ● N tasks (X done, Y open)
 		const statusParts: string[] = [];
 		if (doneCount > 0) statusParts.push(`${doneCount} done`);
-		if (pendingCount > 0) statusParts.push(`${pendingCount} open`);
-		const statusText = `${total} tasks (${statusParts.join(", ")})`;
+		if (openCount > 0) statusParts.push(`${openCount} open`);
+		const statusText = `${totalTasks} tasks (${statusParts.join(", ")})`;
 
 		const headerLine = `${theme.fg("accent", "●")} ${theme.fg("accent", statusText)}`;
 
-		// Build per-task lines
+		// Find active phase (first with in_progress or pending tasks)
+		const activePhase = phases.find((p) => p.tasks.some((t) => t.status === "in_progress" || t.status === "pending"));
+		const visibleTasks = activePhase
+			? activePhase.tasks.filter((t) => t.status === "pending" || t.status === "in_progress").slice(0, 5)
+			: [];
+
 		const taskLines: string[] = [];
-		for (const t of todos) {
-			let icon: string;
+		if (activePhase) {
+			const activeIdx = phases.indexOf(activePhase) + 1;
+			const romanNumeral =
+				["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"][activeIdx - 1] ?? String(activeIdx);
+			taskLines.push(truncateToWidth(`${theme.fg("accent", `╰ ${romanNumeral}. ${activePhase.name}`)}`, width));
+		}
+
+		for (let i = 0; i < visibleTasks.length; i++) {
+			const task = visibleTasks[i]!;
+			const isLast = i === visibleTasks.length - 1;
+			const branch = isLast ? "╰ " : "├─ ";
 			let text: string;
-			if (t.done) {
-				icon = theme.fg("success", "✔");
-				const subject = `#${t.id} ${t.text}`;
-				text = `  ${icon} ${theme.fg("dim", theme.strikethrough(subject))}`;
+			if (task.status === "completed") {
+				text = `${branch}${theme.fg("success", `✓ ${theme.strikethrough(task.content)}`)}`;
+			} else if (task.status === "in_progress") {
+				text = `${branch}${theme.fg("accent", `□ ${task.content}`)}`;
 			} else {
-				icon = theme.fg("muted", "◻");
-				text = `  ${icon} ${theme.fg("dim", `#${t.id}`)} ${t.text}`;
+				text = `${branch}${theme.fg("dim", `□ ${task.content}`)}`;
 			}
-			taskLines.push(truncateToWidth(text, width));
+			taskLines.push(truncateToWidth(`  ${text}`, width));
+		}
+
+		const totalOpenInPhase = activePhase ? activePhase.tasks.filter((t) => t.status !== "completed").length : 0;
+		if (totalOpenInPhase > 5) {
+			taskLines.push(truncateToWidth(`    ${theme.fg("muted", `+${totalOpenInPhase - 5} more`)}`, width));
 		}
 
 		const container = new Container();
@@ -2617,6 +2653,11 @@ export class InteractiveMode {
 				this.editor.setText("");
 				return;
 			}
+			if (text === "/themes") {
+				this.handleThemesCommand();
+				this.editor.setText("");
+				return;
+			}
 			if (text === "/todo") {
 				this.editor.setText("");
 				await this.handleTodoCommand();
@@ -2940,6 +2981,7 @@ export class InteractiveMode {
 			case "thinking_level_changed":
 				this.footer.invalidate();
 				this.updateEditorBorderColor();
+				this.updateEditorStatusLine();
 				break;
 
 			case "message_start":
@@ -3477,7 +3519,7 @@ export class InteractiveMode {
 			new Text(
 				theme.fg(
 					"warning",
-					"This project is not trusted. Project .pi resources and packages are ignored. Use /trust to save a trust decision, then restart pi.",
+					"This project is not trusted. Project .pie resources and packages are ignored. Use /trust to save a trust decision, then restart pie.",
 				),
 				1,
 				0,
@@ -3827,7 +3869,7 @@ export class InteractiveMode {
 		}
 
 		const currentText = this.editor.getExpandedText?.() ?? this.editor.getText();
-		const tmpFile = path.join(os.tmpdir(), `pi-editor-${Date.now()}.pi.md`);
+		const tmpFile = path.join(os.tmpdir(), `pie-editor-${Date.now()}.pie.md`);
 
 		try {
 			// Write current content to temp file
@@ -4224,6 +4266,7 @@ export class InteractiveMode {
 					},
 					onThinkingLevelChange: (level) => {
 						this.session.setThinkingLevel(level);
+						this.updateEditorStatusLine();
 						this.footer.invalidate();
 						this.updateEditorBorderColor();
 					},
@@ -4321,6 +4364,7 @@ export class InteractiveMode {
 				await this.session.setModel(model);
 				this.footer.invalidate();
 				this.updateEditorBorderColor();
+				this.updateEditorStatusLine();
 				this.showStatus(`Model: ${model.id}`);
 				void this.maybeWarnAboutAnthropicSubscriptionAuth(model);
 				this.checkDaxnutsEasterEgg(model);
@@ -4454,6 +4498,7 @@ export class InteractiveMode {
 						await this.session.setModel(model);
 						this.footer.invalidate();
 						this.updateEditorBorderColor();
+						this.updateEditorStatusLine();
 						done();
 						this.showStatus(`Model: ${model.id}`);
 						void this.maybeWarnAboutAnthropicSubscriptionAuth(model);
@@ -4470,6 +4515,35 @@ export class InteractiveMode {
 				initialSearchInput,
 			);
 			return { component: selector, focus: selector };
+		});
+	}
+
+	private handleThemesCommand(): void {
+		this.showSelector((done) => {
+			const currentTheme = this.settingsManager.getTheme() || "dark";
+			const selector = new ThemeSelectorComponent(
+				currentTheme,
+				(themeName) => {
+					const result = setTheme(themeName, true);
+					this.settingsManager.setTheme(themeName);
+					this.ui.invalidate();
+					done();
+					if (!result.success) {
+						this.showError(`Failed to load theme "${themeName}": ${result.error}`);
+					}
+				},
+				() => {
+					done();
+				},
+				(themeName) => {
+					const result = setTheme(themeName, true);
+					if (result.success) {
+						this.ui.invalidate();
+						this.ui.requestRender();
+					}
+				},
+			);
+			return { component: selector, focus: selector.getSelectList() };
 		});
 	}
 
@@ -4858,9 +4932,12 @@ export class InteractiveMode {
 			if (!credential) {
 				continue;
 			}
+
+			const displayName = this.session.modelRegistry.getProviderDisplayName(providerId);
+
 			options.push({
 				id: providerId,
-				name: this.session.modelRegistry.getProviderDisplayName(providerId),
+				name: displayName,
 				authType: credential.type,
 			});
 		}
@@ -5005,6 +5082,7 @@ export class InteractiveMode {
 				} else {
 					try {
 						await this.session.setModel(selectedModel);
+						this.updateEditorStatusLine();
 					} catch (error: unknown) {
 						selectedModel = undefined;
 						const errorMessage = error instanceof Error ? error.message : String(error);

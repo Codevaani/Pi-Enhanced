@@ -76,7 +76,12 @@
 		"thinkingHigh": "#b294bb",
 		"thinkingXhigh": "#d183e8",
 
-		"bashMode": "green"
+		"bashMode": "green",
+
+		"statusLineBg": "#1a1a22",
+		"statusLineSep": "darkGray",
+		"statusLineModel": "accent",
+		"statusLinePath": "gray"
 	},
 	"export": {
 		"pageBg": "#18181e",

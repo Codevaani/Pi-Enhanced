@@ -1,4 +1,17 @@
 export {
+	type AstEditToolDetails,
+	type AstEditToolInput,
+	type AstEditToolOptions,
+	createAstEditTool,
+	createAstEditToolDefinition,
+} from "./ast-edit.ts";
+export {
+	type AstGrepToolDetails,
+	type AstGrepToolInput,
+	createAstGrepTool,
+	createAstGrepToolDefinition,
+} from "./ast-grep.ts";
+export {
 	type BashOperations,
 	type BashSpawnContext,
 	type BashSpawnHook,
@@ -53,13 +66,15 @@ export {
 export {
 	createTodoTool,
 	createTodoToolDefinition,
-	getTodos,
+	getTodoPhases,
 	isTodoWidgetEnabled,
 	resetState,
 	setTodoWidgetEnabled,
 	type TodoDetails,
 	type TodoInput,
-	type TodoItem,
+	type TodoPhase,
+	type TodoStatus,
+	type TodoTask,
 } from "./todo.ts";
 export {
 	DEFAULT_MAX_BYTES,
@@ -81,6 +96,8 @@ export {
 
 import type { AgentTool } from "@earendil-works/pie-agent-core";
 import type { ToolDefinition } from "../extensions/types.ts";
+import { type AstEditToolOptions, createAstEditTool, createAstEditToolDefinition } from "./ast-edit.ts";
+import { createAstGrepTool, createAstGrepToolDefinition } from "./ast-grep.ts";
 import { type BashToolOptions, createBashTool, createBashToolDefinition } from "./bash.ts";
 import { createEditTool, createEditToolDefinition, type EditToolOptions } from "./edit.ts";
 import { createFindTool, createFindToolDefinition, type FindToolOptions } from "./find.ts";
@@ -93,13 +110,26 @@ import { createWriteTool, createWriteToolDefinition, type WriteToolOptions } fro
 
 export type Tool = AgentTool<any>;
 export type ToolDef = ToolDefinition<any, any>;
-export type ToolName = "read" | "bash" | "edit" | "write" | "ripgrep" | "find" | "ls" | "todo" | "web_search";
+export type ToolName =
+	| "read"
+	| "bash"
+	| "edit"
+	| "write"
+	| "ripgrep"
+	| "ast_grep"
+	| "ast_edit"
+	| "find"
+	| "ls"
+	| "todo"
+	| "web_search";
 export const allToolNames: Set<ToolName> = new Set([
 	"read",
 	"bash",
 	"edit",
 	"write",
 	"ripgrep",
+	"ast_grep",
+	"ast_edit",
 	"find",
 	"ls",
 	"todo",
@@ -112,6 +142,8 @@ export interface ToolsOptions {
 	write?: WriteToolOptions;
 	edit?: EditToolOptions;
 	ripgrep?: RipgrepToolOptions;
+	ast_grep?: Record<string, never>;
+	ast_edit?: AstEditToolOptions;
 	find?: FindToolOptions;
 	ls?: LsToolOptions;
 	todo?: Record<string, never>;
@@ -130,6 +162,10 @@ export function createToolDefinition(toolName: ToolName, cwd: string, options?: 
 			return createWriteToolDefinition(cwd, options?.write);
 		case "ripgrep":
 			return createRipgrepToolDefinition(cwd, options?.ripgrep);
+		case "ast_grep":
+			return createAstGrepToolDefinition(cwd);
+		case "ast_edit":
+			return createAstEditToolDefinition(cwd, options?.ast_edit);
 		case "find":
 			return createFindToolDefinition(cwd, options?.find);
 		case "ls":
@@ -155,6 +191,10 @@ export function createTool(toolName: ToolName, cwd: string, options?: ToolsOptio
 			return createWriteTool(cwd, options?.write);
 		case "ripgrep":
 			return createRipgrepTool(cwd, options?.ripgrep);
+		case "ast_grep":
+			return createAstGrepTool(cwd);
+		case "ast_edit":
+			return createAstEditTool(cwd, options?.ast_edit);
 		case "find":
 			return createFindTool(cwd, options?.find);
 		case "ls":
@@ -181,6 +221,7 @@ export function createReadOnlyToolDefinitions(cwd: string, options?: ToolsOption
 	return [
 		createReadToolDefinition(cwd, options?.read),
 		createRipgrepToolDefinition(cwd, options?.ripgrep),
+		createAstGrepToolDefinition(cwd),
 		createFindToolDefinition(cwd, options?.find),
 		createLsToolDefinition(cwd, options?.ls),
 	];
@@ -193,6 +234,8 @@ export function createAllToolDefinitions(cwd: string, options?: ToolsOptions): R
 		edit: createEditToolDefinition(cwd, options?.edit),
 		write: createWriteToolDefinition(cwd, options?.write),
 		ripgrep: createRipgrepToolDefinition(cwd, options?.ripgrep),
+		ast_grep: createAstGrepToolDefinition(cwd),
+		ast_edit: createAstEditToolDefinition(cwd, options?.ast_edit),
 		find: createFindToolDefinition(cwd, options?.find),
 		ls: createLsToolDefinition(cwd, options?.ls),
 		todo: createTodoToolDefinition(),
@@ -213,6 +256,7 @@ export function createReadOnlyTools(cwd: string, options?: ToolsOptions): Tool[]
 	return [
 		createReadTool(cwd, options?.read),
 		createRipgrepTool(cwd, options?.ripgrep),
+		createAstGrepTool(cwd),
 		createFindTool(cwd, options?.find),
 		createLsTool(cwd, options?.ls),
 	];
@@ -225,6 +269,8 @@ export function createAllTools(cwd: string, options?: ToolsOptions): Record<Tool
 		edit: createEditTool(cwd, options?.edit),
 		write: createWriteTool(cwd, options?.write),
 		ripgrep: createRipgrepTool(cwd, options?.ripgrep),
+		ast_grep: createAstGrepTool(cwd),
+		ast_edit: createAstEditTool(cwd, options?.ast_edit),
 		find: createFindTool(cwd, options?.find),
 		ls: createLsTool(cwd, options?.ls),
 		todo: createTodoTool(),
