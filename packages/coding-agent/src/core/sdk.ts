@@ -28,7 +28,6 @@ import {
 	createReadTool,
 	createRipgrepTool,
 	createWriteTool,
-	type ToolName,
 	withFileMutationQueue,
 } from "./tools/index.ts";
 
@@ -243,7 +242,7 @@ export async function createAgentSession(options: CreateAgentSessionOptions = {}
 		thinkingLevel = clampThinkingLevel(model, thinkingLevel) as ThinkingLevel;
 	}
 
-	const defaultActiveToolNames: ToolName[] = [
+	const defaultActiveToolNames: string[] = [
 		"read",
 		"bash",
 		"edit",
