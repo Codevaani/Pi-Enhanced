@@ -1,6 +1,9 @@
 <p align="center">
   <a href="https://github.com/Codevaani/Pi-Enhanced">
-    <img alt="pie logo" src="https://raw.githubusercontent.com/Codevaani/Pi-Enhanced/main/assets/pie.png" width="128">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Codevaani/Pi-Enhanced/main/assets/pie-dark.png">
+      <img alt="pie logo" src="https://raw.githubusercontent.com/Codevaani/Pi-Enhanced/main/assets/pie-light.png" width="128">
+    </picture>
   </a>
 </p>
 
