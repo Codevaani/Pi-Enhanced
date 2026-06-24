@@ -106,13 +106,16 @@ main() {
         curl -fsSL "$url" | tar -xz
         # After extraction, the binary is inside pie/ directory
         if [ -f "pie/pie" ]; then
-            mv pie/pie .
+            mv pie/pie ./pie_tmp
+            rm -rf pie
+            mv pie_tmp pie
         elif [ -f "pie/pi" ]; then
-            mv pie/pi .
+            mv pie/pi ./pi_tmp
+            rm -rf pie
+            mv pi_tmp pi
         else
             error "Binary not found in the archive"
         fi
-        rm -rf pie
     fi
 
     local install_dir
