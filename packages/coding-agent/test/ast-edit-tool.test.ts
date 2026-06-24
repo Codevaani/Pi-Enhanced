@@ -7,7 +7,7 @@ import { createAstEditTool, createAstEditToolDefinition } from "../src/core/tool
 
 function hasSg(): boolean {
 	const result = spawnSync("sg", ["--version"], { stdio: "pipe" });
-	return result.error === undefined || result.error === null;
+	return (result.error === undefined || result.error === null) && result.status === 0;
 }
 
 const itWhenSg = hasSg() ? it : it.skip;
