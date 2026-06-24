@@ -1,3 +1,5 @@
+import { existsSync, rmSync, unlinkSync } from "node:fs";
+import { createInterface } from "node:readline";
 import { Markdown, type MarkdownTheme } from "@earendil-works/pie-tui";
 import chalk from "chalk";
 import { selectConfig } from "./cli/config-selector.ts";
@@ -19,14 +21,14 @@ import { type AppMode, resolveProjectTrusted } from "./core/project-trust.ts";
 import { DefaultResourceLoader } from "./core/resource-loader.ts";
 import { SettingsManager } from "./core/settings-manager.ts";
 import { hasTrustRequiringProjectResources, ProjectTrustStore } from "./core/trust-manager.ts";
-import { spawnProcess } from "./utils/child-process.ts";
+import { spawnProcess, spawnProcessSync } from "./utils/child-process.ts";
 import { getLatestPiRelease, isNewerPackageVersion } from "./utils/version-check.ts";
 import {
 	cleanupWindowsSelfUpdateQuarantine,
 	quarantineWindowsNativeDependencies,
 } from "./utils/windows-self-update.ts";
 
-export type PackageCommand = "install" | "remove" | "update" | "list";
+export type PackageCommand = "install" | "remove" | "update" | "list" | "self-uninstall";
 
 type UpdateTarget = { type: "all" } | { type: "self" } | { type: "extensions"; source?: string };
 
@@ -81,6 +83,8 @@ function getPackageCommandUsage(command: PackageCommand): string {
 			return `${APP_NAME} update [source|self|pi] [--self] [--extensions] [--extension <source>] [--approve|--no-approve] [--force]`;
 		case "list":
 			return `${APP_NAME} list [--approve|--no-approve]`;
+		case "self-uninstall":
+			return `${APP_NAME} uninstall`;
 	}
 }
 
@@ -148,14 +152,29 @@ Short forms:
 
 		case "list":
 			console.log(`${chalk.bold("Usage:")}
-  ${getPackageCommandUsage("list")}
+	  ${getPackageCommandUsage("list")}
 
-List installed packages from user and project settings.
+	List installed packages from user and project settings.
 
-Options:
-  -a, --approve      Trust project-local files for this command
-  -na, --no-approve  Ignore project-local files for this command
-`);
+	Options:
+	  -a, --approve      Trust project-local files for this command
+	  -na, --no-approve  Ignore project-local files for this command
+	`);
+			return;
+
+		case "self-uninstall":
+			console.log(`${chalk.bold("Usage:")}
+	  ${getPackageCommandUsage("self-uninstall")}
+
+	Uninstall ${APP_NAME} itself from this system.
+
+	Removes the ${APP_NAME} executable and all configuration files
+	from the agent directory (~/.pie/agent). Works on all platforms:
+	Linux, macOS, and Windows.
+
+	Options:
+	  --force    Skip confirmation prompt
+	`);
 			return;
 	}
 }
@@ -164,7 +183,11 @@ function parsePackageCommand(args: string[]): PackageCommandOptions | undefined 
 	const [rawCommand, ...rest] = args;
 	let command: PackageCommand | undefined;
 	if (rawCommand === "uninstall") {
-		command = "remove";
+		// `pi uninstall` (no source) = self-uninstall, `pi uninstall <source>` = remove package
+		command =
+			rest.length === 0 || (rest.length === 1 && (rest[0] === "-h" || rest[0] === "--help"))
+				? "self-uninstall"
+				: "remove";
 	} else if (rawCommand === "install" || rawCommand === "remove" || rawCommand === "update" || rawCommand === "list") {
 		command = rawCommand;
 	}
@@ -230,7 +253,7 @@ function parsePackageCommand(args: string[]): PackageCommandOptions | undefined 
 		}
 
 		if (arg === "--force") {
-			if (command === "update") {
+			if (command === "update" || command === "self-uninstall") {
 				force = true;
 			} else {
 				invalidOption = invalidOption ?? arg;
@@ -655,6 +678,120 @@ export async function handlePackageCommand(
 					}
 				}
 
+				return true;
+			}
+
+			case "self-uninstall": {
+				// Confirmation (skip with --force)
+				if (!options.force) {
+					const rl = createInterface({ input: process.stdin, output: process.stdout });
+					const answer = await new Promise<string>((resolve) => {
+						rl.question(
+							chalk.yellow(
+								`Are you sure you want to uninstall ${APP_NAME}? This will remove the executable and all configuration files. [y/N] `,
+							),
+							resolve,
+						);
+					});
+					rl.close();
+					if (answer.toLowerCase() !== "y" && answer.toLowerCase() !== "yes") {
+						console.log(chalk.dim("Uninstall cancelled."));
+						return true;
+					}
+				}
+
+				const installMethod = detectInstallMethod();
+				console.log(chalk.dim(`Detected install method: ${installMethod}`));
+
+				if (installMethod === "bun-binary") {
+					// Single executable — delete the binary file
+					const binaryPath = process.execPath;
+					if (!binaryPath) {
+						console.error(chalk.red("Could not determine binary path."));
+						process.exitCode = 1;
+						return true;
+					}
+					console.log(chalk.dim(`Removing binary: ${binaryPath}`));
+					try {
+						if (process.platform === "win32") {
+							// Windows may lock the running executable; schedule deletion via cmd
+							spawnProcessSync("cmd", ["/c", `del /f /q "${binaryPath}"`], { encoding: "utf-8", timeout: 5000 });
+						} else {
+							unlinkSync(binaryPath);
+						}
+					} catch (error) {
+						console.error(
+							chalk.red(`Failed to remove binary: ${error instanceof Error ? error.message : error}`),
+						);
+						process.exitCode = 1;
+						return true;
+					}
+				} else if (installMethod !== "unknown") {
+					// Package manager install — uninstall via the package manager
+					const packageName = PACKAGE_NAME;
+					const [command, ...prefixArgs] = selfUpdateNpmCommand ?? [];
+
+					let uninstallArgs: string[];
+					switch (installMethod) {
+						case "npm":
+							uninstallArgs = [
+								...(command ? [command] : ["npm"]),
+								...prefixArgs,
+								"uninstall",
+								"-g",
+								packageName,
+							];
+							break;
+						case "pnpm":
+							uninstallArgs = ["pnpm", "remove", "-g", packageName];
+							break;
+						case "yarn":
+							uninstallArgs = ["yarn", "global", "remove", packageName];
+							break;
+						case "bun":
+							uninstallArgs = ["bun", "uninstall", "-g", packageName];
+							break;
+						default:
+							uninstallArgs = ["npm", "uninstall", "-g", packageName];
+					}
+
+					const uninstallCommand = uninstallArgs[0]!;
+					const uninstallArgsRest = uninstallArgs.slice(1);
+					console.log(chalk.dim(`Running: ${uninstallCommand} ${uninstallArgsRest.join(" ")}`));
+
+					const result = spawnProcessSync(uninstallCommand, uninstallArgsRest, {
+						encoding: "utf-8",
+						shell: process.platform === "win32",
+					});
+					if (result.status !== 0) {
+						console.error(chalk.red(`Uninstall command failed with exit code ${result.status ?? "unknown"}.`));
+						process.exitCode = 1;
+						return true;
+					}
+				} else {
+					console.error(chalk.red("Could not detect how pi was installed. Please uninstall manually:"));
+					const entrypoint = process.argv[1] || process.execPath;
+					console.error(chalk.dim(`  Binary location: ${entrypoint}`));
+					console.error(chalk.dim("  Config directory: ~/.pi/agent"));
+					process.exitCode = 1;
+					return true;
+				}
+
+				// Clean up agent config directory
+				const agentDirPath = getAgentDir();
+				if (existsSync(agentDirPath)) {
+					console.log(chalk.dim(`Removing config directory: ${agentDirPath}`));
+					try {
+						rmSync(agentDirPath, { recursive: true, force: true });
+					} catch {
+						console.log(
+							chalk.yellow(`Could not remove config directory. Please delete it manually: ${agentDirPath}`),
+						);
+					}
+				}
+
+				console.log(chalk.green(`${APP_NAME} has been uninstalled.`));
+				process.exit(0);
 				return true;
 			}
 
