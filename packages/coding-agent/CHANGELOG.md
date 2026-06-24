@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.0.3] - 2026-06-25
 
 ### Added
 
@@ -25,6 +25,8 @@
 - Updated self-update tests to match GitHub API response format (`tag_name` instead of `version`/`packageName`).
 - Fixed test assertions for bun-binary self-update flow.
 - Removed unused `PACKAGE_NAME` import from package-command-paths test.
+
+## [Unreleased]
 
 ## [0.79.6] - 2026-06-16
 
