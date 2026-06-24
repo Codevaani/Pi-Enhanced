@@ -1,53 +1,21 @@
 import { existsSync, rmSync, unlinkSync } from "node:fs";
 import { createInterface } from "node:readline";
-import { Markdown, type MarkdownTheme } from "@earendil-works/pie-tui";
 import chalk from "chalk";
 import { selectConfig } from "./cli/config-selector.ts";
 import { createProjectTrustContext } from "./cli/project-trust.ts";
-import {
-	APP_NAME,
-	detectInstallMethod,
-	getAgentDir,
-	getPackageDir,
-	getSelfUpdateCommand,
-	getSelfUpdateUnavailableInstruction,
-	PACKAGE_NAME,
-	type SelfUpdateCommand,
-	VERSION,
-} from "./config.ts";
+import { APP_NAME, detectInstallMethod, getAgentDir, PACKAGE_NAME, VERSION } from "./config.ts";
 import type { ExtensionFactory } from "./core/extensions/types.ts";
 import { DefaultPackageManager } from "./core/package-manager.ts";
 import { type AppMode, resolveProjectTrusted } from "./core/project-trust.ts";
 import { DefaultResourceLoader } from "./core/resource-loader.ts";
 import { SettingsManager } from "./core/settings-manager.ts";
 import { hasTrustRequiringProjectResources, ProjectTrustStore } from "./core/trust-manager.ts";
-import { spawnProcess, spawnProcessSync } from "./utils/child-process.ts";
+import { spawnProcessSync } from "./utils/child-process.ts";
 import { getLatestPiRelease, isNewerPackageVersion } from "./utils/version-check.ts";
-import {
-	cleanupWindowsSelfUpdateQuarantine,
-	quarantineWindowsNativeDependencies,
-} from "./utils/windows-self-update.ts";
 
 export type PackageCommand = "install" | "remove" | "update" | "list" | "self-uninstall";
 
 type UpdateTarget = { type: "all" } | { type: "self" } | { type: "extensions"; source?: string };
-
-const SELF_UPDATE_NOTE_MARKDOWN_THEME: MarkdownTheme = {
-	heading: (text) => chalk.bold(chalk.yellow(text)),
-	link: (text) => chalk.cyan(text),
-	linkUrl: (text) => chalk.dim(text),
-	code: (text) => chalk.yellow(text),
-	codeBlock: (text) => chalk.dim(text),
-	codeBlockBorder: (text) => chalk.dim(text),
-	quote: (text) => chalk.dim(text),
-	quoteBorder: (text) => chalk.dim(text),
-	hr: (text) => chalk.dim(text),
-	listBullet: (text) => chalk.yellow(text),
-	bold: (text) => chalk.bold(text),
-	italic: (text) => chalk.italic(text),
-	strikethrough: (text) => chalk.strikethrough(text),
-	underline: (text) => chalk.underline(text),
-};
 
 interface PackageCommandOptions {
 	command: PackageCommand;
@@ -347,41 +315,6 @@ function updateTargetIncludesExtensions(target: UpdateTarget): boolean {
 	return target.type === "all" || target.type === "extensions";
 }
 
-function printSelfUpdateUnavailable(npmCommand?: string[], updatePackageName = PACKAGE_NAME): void {
-	console.error(`error: ${APP_NAME} cannot self-update this installation.`);
-	console.error(getSelfUpdateUnavailableInstruction(PACKAGE_NAME, npmCommand, updatePackageName));
-
-	const entrypoint = process.argv[1];
-	if (entrypoint) {
-		console.error("");
-		console.error(`Location of pi executable: ${entrypoint}`);
-	}
-}
-
-function printSelfUpdateFallback(command: SelfUpdateCommand): void {
-	console.error(chalk.dim(`If this keeps failing, run this command yourself: ${command.display}`));
-}
-
-function printSelfUpdateNote(note: string): void {
-	const trimmedNote = note.trim();
-	if (!trimmedNote) {
-		return;
-	}
-
-	console.log();
-	console.log(chalk.bold(chalk.yellow("Update note")));
-	try {
-		const width = Math.max(20, process.stdout.columns ?? 80);
-		const renderedLines = new Markdown(trimmedNote, 0, 0, SELF_UPDATE_NOTE_MARKDOWN_THEME)
-			.render(width)
-			.map((line) => line.trimEnd());
-		console.log(renderedLines.join("\n"));
-	} catch {
-		console.log(trimmedNote);
-	}
-	console.log();
-}
-
 interface SelfUpdatePlan {
 	packageName: string;
 	shouldRun: boolean;
@@ -405,39 +338,6 @@ async function getSelfUpdatePlan(force: boolean): Promise<SelfUpdatePlan> {
 
 	console.log(chalk.green(`${APP_NAME} is already up to date (v${VERSION})`));
 	return { packageName: PACKAGE_NAME, shouldRun: false };
-}
-
-async function runSelfUpdate(command: SelfUpdateCommand): Promise<void> {
-	console.log(chalk.dim(`Updating ${APP_NAME} with ${command.display}...`));
-	for (const step of command.steps ?? [command]) {
-		await new Promise<void>((resolve, reject) => {
-			const child = spawnProcess(step.command, step.args, {
-				stdio: "inherit",
-			});
-			child.on("error", (error) => {
-				reject(error);
-			});
-			child.on("close", (code, signal) => {
-				if (code === 0) {
-					resolve();
-				} else if (signal) {
-					reject(new Error(`${step.display} terminated by signal ${signal}`));
-				} else {
-					reject(new Error(`${step.display} exited with code ${code ?? "unknown"}`));
-				}
-			});
-		});
-	}
-}
-
-function prepareWindowsNpmSelfUpdate(): void {
-	if (process.platform !== "win32") {
-		return;
-	}
-
-	const packageDir = getPackageDir();
-	cleanupWindowsSelfUpdateQuarantine(packageDir);
-	quarantineWindowsNativeDependencies(packageDir);
 }
 
 function parseProjectTrustOverride(args: readonly string[]): boolean | undefined {
@@ -617,7 +517,6 @@ export async function handlePackageCommand(
 		return true;
 	}
 	reportSettingsErrors(settingsManager, "package command");
-	const selfUpdateNpmCommand = settingsManager.getGlobalSettings().npmCommand;
 
 	const packageManager = new DefaultPackageManager({ cwd, agentDir, settingsManager });
 
@@ -701,78 +600,31 @@ export async function handlePackageCommand(
 				}
 
 				const installMethod = detectInstallMethod();
-				console.log(chalk.dim(`Detected install method: ${installMethod}`));
+				if (installMethod !== "bun-binary") {
+					console.error(chalk.red("Could not detect pi installation. Please uninstall manually:"));
+					console.error(chalk.dim(`  Binary location: ${process.argv[1] || process.execPath}`));
+					console.error(chalk.dim("  Config directory: ~/.pie/agent"));
+					process.exitCode = 1;
+					return true;
+				}
 
-				if (installMethod === "bun-binary") {
-					// Single executable — delete the binary file
-					const binaryPath = process.execPath;
-					if (!binaryPath) {
-						console.error(chalk.red("Could not determine binary path."));
-						process.exitCode = 1;
-						return true;
+				// Single executable — delete the binary file
+				const binaryPath = process.execPath;
+				if (!binaryPath) {
+					console.error(chalk.red("Could not determine binary path."));
+					process.exitCode = 1;
+					return true;
+				}
+				console.log(chalk.dim(`Removing binary: ${binaryPath}`));
+				try {
+					if (process.platform === "win32") {
+						// Windows may lock the running executable; schedule deletion via cmd
+						spawnProcessSync("cmd", ["/c", `del /f /q "${binaryPath}"`], { encoding: "utf-8", timeout: 5000 });
+					} else {
+						unlinkSync(binaryPath);
 					}
-					console.log(chalk.dim(`Removing binary: ${binaryPath}`));
-					try {
-						if (process.platform === "win32") {
-							// Windows may lock the running executable; schedule deletion via cmd
-							spawnProcessSync("cmd", ["/c", `del /f /q "${binaryPath}"`], { encoding: "utf-8", timeout: 5000 });
-						} else {
-							unlinkSync(binaryPath);
-						}
-					} catch (error) {
-						console.error(
-							chalk.red(`Failed to remove binary: ${error instanceof Error ? error.message : error}`),
-						);
-						process.exitCode = 1;
-						return true;
-					}
-				} else if (installMethod !== "unknown") {
-					// Package manager install — uninstall via the package manager
-					const packageName = PACKAGE_NAME;
-					const [command, ...prefixArgs] = selfUpdateNpmCommand ?? [];
-
-					let uninstallArgs: string[];
-					switch (installMethod) {
-						case "npm":
-							uninstallArgs = [
-								...(command ? [command] : ["npm"]),
-								...prefixArgs,
-								"uninstall",
-								"-g",
-								packageName,
-							];
-							break;
-						case "pnpm":
-							uninstallArgs = ["pnpm", "remove", "-g", packageName];
-							break;
-						case "yarn":
-							uninstallArgs = ["yarn", "global", "remove", packageName];
-							break;
-						case "bun":
-							uninstallArgs = ["bun", "uninstall", "-g", packageName];
-							break;
-						default:
-							uninstallArgs = ["npm", "uninstall", "-g", packageName];
-					}
-
-					const uninstallCommand = uninstallArgs[0]!;
-					const uninstallArgsRest = uninstallArgs.slice(1);
-					console.log(chalk.dim(`Running: ${uninstallCommand} ${uninstallArgsRest.join(" ")}`));
-
-					const result = spawnProcessSync(uninstallCommand, uninstallArgsRest, {
-						encoding: "utf-8",
-						shell: process.platform === "win32",
-					});
-					if (result.status !== 0) {
-						console.error(chalk.red(`Uninstall command failed with exit code ${result.status ?? "unknown"}.`));
-						process.exitCode = 1;
-						return true;
-					}
-				} else {
-					console.error(chalk.red("Could not detect how pi was installed. Please uninstall manually:"));
-					const entrypoint = process.argv[1] || process.execPath;
-					console.error(chalk.dim(`  Binary location: ${entrypoint}`));
-					console.error(chalk.dim("  Config directory: ~/.pi/agent"));
+				} catch (error) {
+					console.error(chalk.red(`Failed to remove binary: ${error instanceof Error ? error.message : error}`));
 					process.exitCode = 1;
 					return true;
 				}
@@ -812,40 +664,15 @@ export async function handlePackageCommand(
 						return true;
 					}
 					const installMethod = detectInstallMethod();
-					if (process.platform === "win32" && installMethod !== "npm" && installMethod !== "pnpm") {
-						console.error(
-							chalk.red(`${APP_NAME} self-update on Windows is only supported for npm and pnpm installs.`),
-						);
-						console.error(chalk.dim(`Detected install method: ${installMethod}. Update ${APP_NAME} manually.`));
+					if (installMethod === "bun-binary") {
+						console.log(chalk.dim(`Download from: https://github.com/Codevaani/Pi-Enhanced/releases/latest`));
 						process.exitCode = 1;
 						return true;
 					}
-					const selfUpdateCommand = getSelfUpdateCommand(
-						PACKAGE_NAME,
-						selfUpdateNpmCommand,
-						selfUpdatePlan.packageName,
-					);
-					if (!selfUpdateCommand) {
-						printSelfUpdateUnavailable(selfUpdateNpmCommand, selfUpdatePlan.packageName);
-						process.exitCode = 1;
-						return true;
-					}
-					if (selfUpdatePlan.note) {
-						printSelfUpdateNote(selfUpdatePlan.note);
-					}
-					try {
-						if (installMethod === "npm") {
-							prepareWindowsNpmSelfUpdate();
-						}
-						await runSelfUpdate(selfUpdateCommand);
-					} catch (error: unknown) {
-						const message = error instanceof Error ? error.message : "Unknown package command error";
-						console.error(chalk.red(`Error: ${message}`));
-						printSelfUpdateFallback(selfUpdateCommand);
-						process.exitCode = 1;
-						return true;
-					}
-					console.log(chalk.green(`Updated ${APP_NAME}`));
+					console.error(chalk.red(`${APP_NAME} self-update is not supported for this installation.`));
+					console.error(chalk.dim(`Download the latest version from the GitHub releases page.`));
+					process.exitCode = 1;
+					return true;
 				}
 				return true;
 			}
