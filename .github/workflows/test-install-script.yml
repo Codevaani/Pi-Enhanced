@@ -1,0 +1,45 @@
+name: Test Install Scripts
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test-unix:
+    name: Test Install Script on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run install.sh
+        run: |
+          export INSTALL_DIR=$HOME/.local/bin
+          bash ./scripts/install.sh
+          
+      - name: Verify installation
+        run: |
+          export INSTALL_DIR=$HOME/.local/bin
+          export PATH="$INSTALL_DIR:$PATH"
+          pie --version
+
+  test-windows:
+    name: Test Install Script on windows-latest
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run install.ps1
+        run: |
+          $InstallDir = "$env:USERPROFILE\pie-bin"
+          ./scripts/install.ps1 -InstallDir $InstallDir
+          
+      - name: Verify installation
+        run: |
+          $InstallDir = "$env:USERPROFILE\pie-bin"
+          & "$InstallDir\pie.exe" --version
