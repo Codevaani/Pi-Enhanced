@@ -1,4 +1,14 @@
+<p align="center">
+  <a href="https://github.com/Codevaani/Pi-Enhanced">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Codevaani/Pi-Enhanced/main/assets/pie-dark.png">
+      <img alt="pie logo" src="https://raw.githubusercontent.com/Codevaani/Pi-Enhanced/main/assets/pie-light.png" width="128">
+    </picture>
+  </a>
+</p>
+
 # pie — Extensible AI Coding Assistant CLI
+
 
 Pi-Enhanced (`pie`) is an open-source, highly extensible terminal-based coding agent CLI designed to give developers absolute control over their AI-assisted development workflows. It supports multiple LLM providers, conversation session branching, drag-and-drop file attachments, and modular developer tooling inside a premium Terminal User Interface (TUI).
 
