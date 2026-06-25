@@ -68,6 +68,15 @@ function Main {
             Write-Error "Binary not found in the archive"
         }
 
+        # Copy themes to ~/.pie/agent/themes
+        $themesSource = Join-Path $extractDir "theme"
+        if (Test-Path $themesSource) {
+            $themesDest = Join-Path $HOME ".pie\agent\themes"
+            New-Item -ItemType Directory -Force -Path $themesDest | Out-Null
+            Copy-Item -Path "$themesSource\*.json" -Destination $themesDest -Force
+        }
+
+
         # Rename to pie.exe if needed
         $targetName = "pie.exe"
         if ($binary.Name -ne $targetName) {

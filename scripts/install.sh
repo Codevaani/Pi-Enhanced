@@ -104,6 +104,11 @@ main() {
         mv "$binary" pie.exe
     else
         curl -fsSL "$url" | tar -xz
+        # Copy themes to ~/.pie/agent/themes
+        if [ -d "pie/theme" ]; then
+            mkdir -p "$HOME/.pie/agent/themes"
+            cp -r pie/theme/*.json "$HOME/.pie/agent/themes/" 2>/dev/null || true
+        fi
         # After extraction, the binary is inside pie/ directory
         if [ -f "pie/pie" ]; then
             mv pie/pie ./pie_tmp
