@@ -1,4 +1,5 @@
 import * as fs from "node:fs";
+import { createRequire } from "node:module";
 import * as path from "node:path";
 import {
 	type EditorTheme,
@@ -15,8 +16,10 @@ import { getCustomThemesDir, getThemesDir } from "../../../config.ts";
 import type { SourceInfo } from "../../../core/source-info.ts";
 import { closeWatcher, watchWithErrorHandler } from "../../../utils/fs-watch.ts";
 import { highlight, supportsLanguage } from "../../../utils/syntax-highlight.ts";
-import darkTheme from "./dark.json";
-import lightTheme from "./light.json";
+
+const require = createRequire(import.meta.url);
+const darkTheme = require("./dark.json");
+const lightTheme = require("./light.json");
 
 // ============================================================================
 // Types & Schema
