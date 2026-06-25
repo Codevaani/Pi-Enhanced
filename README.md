@@ -1,100 +1,99 @@
-<p align="center">
-  <a href="https://github.com/Codevaani/Pi-Enhanced">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Codevaani/Pi-Enhanced/main/assets/pie-dark.png">
-      <img alt="pie logo" src="https://raw.githubusercontent.com/Codevaani/Pi-Enhanced/main/assets/pie-light.png" width="128">
-    </picture>
-  </a>
-</p>
+# pie — Extensible AI Coding Assistant CLI
+
+Pi-Enhanced (`pie`) is an open-source, highly extensible terminal-based coding agent CLI designed to give developers absolute control over their AI-assisted development workflows. It supports multiple LLM providers, conversation session branching, drag-and-drop file attachments, and modular developer tooling inside a premium Terminal User Interface (TUI).
 
 ---
 
-# pie — AI Coding Assistant
+## Key Capabilities
 
-> **v1.0.0** — First release. Maintained by [@Codevaani](https://github.com/Codevaani).
-
-The open-source, extensible coding agent CLI. Built for developers who want full control over their AI-assisted workflow.
-
-- **Multi-provider**: OpenAI, Anthropic, Google, Groq, xAI, OpenRouter, Mistral, and more
-- **Extensions**: Add custom tools, UI widgets, event hooks
-- **Skills**: Load CLI tools as LLM-accessible skills
-- **Session management**: Fork, branch, resume, compact conversations
-- **Live widgets**: Todo tracker, indexing progress, and more
+* **Multi-Provider LLM Engine**: Native support for Anthropic (Claude), OpenAI (GPT), Google (Gemini), Groq, xAI (Grok), OpenRouter, Mistral, and Amazon Bedrock.
+* **Interactive TUI**: A terminal interface featuring real-time response streaming, searchable model selectors (`/model`), active session browsers, and cost/token usage tracking in the footer.
+* **Built-in Developer Tools**:
+  * `read` / `write`: Read file content and safely write new files.
+  * `edit`: Surgical find-and-replace tool for exact code updates.
+  * `bash`: Run shell commands locally or in a sandbox environment.
+  * `ripgrep` / `find` / `ls`: Rapidly locate files and search contents respecting `.gitignore`.
+* **Advanced Session Management**: Branch conversations from any historical message (`/branch`), resume active sessions (`--resume`), and export chats to HTML.
+* **Extensible Slash Commands**: Turn custom prompts into slash commands by placing `.txt` files in `~/.pie/slash-commands/`.
 
 ---
 
-## Install
+## Installation
 
-### Linux / macOS (curl bash)
-
+### Linux & macOS (bash)
 ```bash
 curl -fsSL https://github.com/Codevaani/Pi-Enhanced/releases/latest/download/install.sh | bash
 ```
 
 ### Windows (PowerShell)
-
 ```powershell
 iwr -Uri https://github.com/Codevaani/Pi-Enhanced/releases/latest/download/install.ps1 -UseBasicParsing | iex
 ```
 
-### Manual
+### Manual Installation
+Download the binary matching your platform from the [Releases Page](https://github.com/Codevaani/Pi-Enhanced/releases), extract the archive, and add the executable to your system path.
 
-Download the archive for your platform from the [releases page](https://github.com/Codevaani/Pi-Enhanced/releases), extract it, and add the binary to your PATH.
+---
 
-| Platform | File |
-|----------|------|
-| macOS (Apple Silicon) | `pie-darwin-arm64.tar.gz` |
-| macOS (Intel) | `pie-darwin-x64.tar.gz` |
-| Linux x64 | `pie-linux-x64.tar.gz` |
-| Linux ARM64 | `pie-linux-arm64.tar.gz` |
-| Windows x64 | `pie-windows-x64.zip` |
-| Windows ARM64 | `pie-windows-arm64.zip` |
+## Getting Started
 
-Then run:
-
+Start the interactive terminal application by running:
 ```bash
-pie  # Start interactive mode
+pie
 ```
 
+### Command Usage Examples
+
+* **Interactive Mode with Prompt**:
+  ```bash
+  pie "Explain the setup in package.json"
+  ```
+* **Process a Prompt and Exit (Non-Interactive)**:
+  ```bash
+  pie -p "List all test files in the workspace"
+  ```
+* **Attach Files or Images**:
+  ```bash
+  pie @src/main.ts @assets/design.png "Refactor this layout based on the design mockup"
+  ```
+* **Limit Models or Set Custom Thinking Levels**:
+  ```bash
+  pie --models claude-sonnet-4-5:high,gemini-2.5-pro:medium
+  ```
+
 ---
 
-## Built-in Tools
+## Repository Structure
 
-| Tool | Description |
-|------|-------------|
-| `read` | Read file contents |
-| `bash` | Execute shell commands |
-| `edit` | Edit files with diff |
-| `write` | Create or overwrite files |
-| `ripgrep` | Search file contents |
-| `find` | Find files by path |
-| `ls` | List directory contents |
-| `todo` | Track multi-step progress with live widget |
-| `web_search` | Search the live web via Exa MCP |
+This monorepo is divided into decoupled workspaces under the `packages/` directory:
+
+* **[packages/coding-agent](packages/coding-agent)**: Core CLI orchestrator, tool registry, and session database managers.
+* **[packages/tui](packages/tui)**: High-performance terminal UI renderer supporting differential updates and custom themes.
+* **[packages/agent](packages/agent)**: Decoupled agent state machine execution loop.
+* **[packages/ai](packages/ai)**: Universal model routing client supporting automatic model configuration and credentials loading.
 
 ---
 
-## Development
+## Development Setup
+
+Clone the repository and install workspace dependencies:
 
 ```bash
 git clone https://github.com/Codevaani/Pi-Enhanced.git
 cd Pi-Enhanced
 
+# Install dependencies (respects lockstep workspace versioning)
 npm install --ignore-scripts
+
+# Verify code formatting and run validation checks
 npm run check
-./pie-test.sh  # Run pie from sources
+
+# Launch the CLI locally from source
+./pie-test.sh
 ```
-
----
-
-## Contact
-
-- Email: [codevaani.in@gmail.com](mailto:codevaani.in@gmail.com)
-- GitHub: [@Codevaani](https://github.com/Codevaani)
-- Issues: [github.com/Codevaani/Pi-Enhanced/issues](https://github.com/Codevaani/Pi-Enhanced/issues)
 
 ---
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

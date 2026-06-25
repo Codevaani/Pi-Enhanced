@@ -2,26 +2,25 @@
 
 ## [0.0.1] - 2026-06-25
 
-### Added
+### First Release of Pi-Enhanced (pie)
 
-- Added `pie uninstall` command — self-uninstalls the CLI by deleting the binary and `~/.pie/agent` config directory. Works on Linux, macOS, and Windows.
-- Added `self-uninstall` command type to package manager CLI.
+This is the initial official release of **Pi-Enhanced** (`pie`), a fully open-source, highly extensible, and multi-provider AI coding assistant CLI. Designed from the ground up to give developers complete control over their AI-assisted software development workflows, this release introduces a robust terminal-based user interface (TUI) alongside advanced agent capabilities.
 
-### Changed
+#### Key Features Included
 
-- Switched version check from pi.dev API to GitHub Releases API (`api.github.com/repos/Codevaani/Pi-Enhanced/releases/latest`).
-- Simplified install method detection — only `bun-binary` and `unknown` remain. Removed all npm/pnpm/yarn/bun package manager code paths.
-- Self-update (`pie update --self`) now shows the GitHub Releases download URL instead of running npm/pnpm/yarn/bun commands.
-
-### Removed
-
-- Removed LSP subsystem (`src/lsp/`) including all LSP tool registration, imports, and interactive mode display.
-- Removed all npm/pnpm/yarn/bun package manager update/uninstall infrastructure: `SelfUpdateCommand`, `getSelfUpdateCommand`, `getSelfUpdateCommandForMethod`, `readCommandOutput`, `getInferredNpmInstall`, `getGlobalPackageRoots`, `isManagedByGlobalPackageManager`, `isSelfUpdatePathWritable`, `runSelfUpdate`, `prepareWindowsNpmSelfUpdate`, `printSelfUpdateUnavailable`, `printSelfUpdateFallback`, `printSelfUpdateNote`.
-- Removed unused `windows-self-update` quarantine utilities from package manager CLI (kept in startup flow).
-- Removed stale `.github/` workflow and template files (APPROVED_CONTRIBUTORS, issue templates, CI workflows).
-
-### Fixed
-
-- Updated self-update tests to match GitHub API response format (`tag_name` instead of `version`/`packageName`).
-- Fixed test assertions for bun-binary self-update flow.
-- Removed unused `PACKAGE_NAME` import from package-command-paths test.
+- **Multi-Provider LLM Integration**: First-class support for OpenAI, Anthropic, Google Gemini, Groq, xAI, OpenRouter, Mistral, and Amazon Bedrock.
+- **Interactive Terminal User Interface (TUI)**: A feature-rich, high-performance terminal layout featuring:
+  - Real-time streaming response blocks.
+  - Interactive model selector with fuzzy search (`/model`).
+  - Active session selection and history browser.
+  - Auto-compaction warnings and tokens/costs indicator inside the footer.
+- **Surgical Code Editing Tooling**:
+  - `read`: Read target files with context checking.
+  - `edit`: Apply precise find/replace edits to local files securely.
+  - `write`: Create or overwrite files automatically.
+  - `bash`: Run shell commands in a sandboxed or local execution environment.
+  - `ripgrep` & `find`: Fast file exploration respecting `.gitignore`.
+- **Advanced Attachment & Command Pipeline**:
+  - Drag-and-drop file/image attachments directly inside supported terminals.
+  - File-based custom slash commands parsed from `~/.pie/slash-commands/`.
+  - Conversation branching (`/branch`) to resume work from any previous point.
