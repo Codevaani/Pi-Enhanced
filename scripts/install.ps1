@@ -12,17 +12,29 @@ $ErrorActionPreference = "Stop"
 
 function Write-Info($msg) { Write-Host "==> $msg" -ForegroundColor Green }
 function Write-Warn($msg) { Write-Host "==> $msg" -ForegroundColor Blue }
-function Write-Error($msg) { Write-Host "==> $msg" -ForegroundColor Red; exit 1 }
+function Exit-WithError($msg) { Write-Host "==> $msg" -ForegroundColor Red; exit 1 }
 
-# Detect platform
+# Detect architecture using $env:PROCESSOR_ARCHITECTURE which is always set
+# and works reliably in both Windows PowerShell 5.1 and PowerShell 7+.
+# Values: AMD64 (x64), ARM64 (arm64), x86 (unsupported)
 function Get-Platform {
-    $os = "windows"
-    $arch = switch ([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture) {
-        "X64"   { "x64" }
-        "Arm64" { "arm64" }
-        default { Write-Error "Unsupported architecture: $_" }
+    $arch = switch ($env:PROCESSOR_ARCHITECTURE) {
+        "AMD64" { "x64" }
+        "ARM64" { "arm64" }
+        "x86"   {
+            # On a 64-bit OS running a 32-bit shell PROCESSOR_ARCHITECTURE reports x86.
+            # PROCESSOR_ARCHITEW6432 holds the real OS arch in that case.
+            if ($env:PROCESSOR_ARCHITEW6432 -eq "AMD64") {
+                "x64"
+            } elseif ($env:PROCESSOR_ARCHITEW6432 -eq "ARM64") {
+                "arm64"
+            } else {
+                Exit-WithError "Unsupported architecture: x86 (32-bit). pie requires a 64-bit system."
+            }
+        }
+        default { Exit-WithError "Unsupported architecture: $($env:PROCESSOR_ARCHITECTURE). pie supports x64 and arm64." }
     }
-    return "pie-$os-$arch.zip"
+    return "pie-windows-$arch.zip"
 }
 
 # Resolve download URL
@@ -33,15 +45,12 @@ function Get-DownloadUrl($platform) {
     return "https://github.com/$Repo/releases/download/$Version/$platform"
 }
 
-# Detect install directory
-function Get-InstallDir {
+# The lib dir is where the binary AND all assets (theme\, export-html\, assets\,
+# package.json) are stored together. The binary uses dirname(process.execPath) to
+# locate these assets at runtime, so they must live in the same directory.
+function Get-LibDir {
     if ($InstallDir) { return $InstallDir }
-    # Prefer ~/bin, then LOCALAPPDATA\Programs\pi
-    $userBin = Join-Path $HOME "bin"
-    if (Test-Path $userBin) { return $userBin }
-    $appDir = Join-Path $env:LOCALAPPDATA "Programs\pi"
-    New-Item -ItemType Directory -Force -Path $appDir | Out-Null
-    return $appDir
+    return Join-Path $env:LOCALAPPDATA "Programs\pie"
 }
 
 function Main {
@@ -62,39 +71,38 @@ function Main {
         $extractDir = Join-Path $tmpDir "pie-extracted"
         Expand-Archive -Path $zipPath -DestinationPath $extractDir
 
-        # Find the binary
-        $binary = Get-ChildItem -Path $extractDir -Recurse -Include "pie.exe", "pi.exe" | Select-Object -First 1
-        if (-not $binary) {
-            Write-Error "Binary not found in the archive"
+        # The zip archive contains files at the root level (pie.exe, theme\, etc.)
+        $libDir = Get-LibDir
+
+        # Remove previous installation and replace with new one
+        if (Test-Path $libDir) {
+            Remove-Item -Path $libDir -Recurse -Force
+        }
+        New-Item -ItemType Directory -Force -Path $libDir | Out-Null
+
+        # Copy the full archive contents so assets stay next to the binary
+        Copy-Item -Path "$extractDir\*" -Destination $libDir -Recurse -Force
+
+        # Rename pi.exe to pie.exe for consistency if needed
+        $piExe  = Join-Path $libDir "pi.exe"
+        $pieExe = Join-Path $libDir "pie.exe"
+        if ((Test-Path $piExe) -and -not (Test-Path $pieExe)) {
+            Rename-Item -Path $piExe -NewName "pie.exe"
         }
 
-        # Copy themes to ~/.pie/agent/themes
-        $themesSource = Join-Path $extractDir "theme"
-        if (Test-Path $themesSource) {
-            $themesDest = Join-Path $HOME ".pie\agent\themes"
-            New-Item -ItemType Directory -Force -Path $themesDest | Out-Null
-            Copy-Item -Path "$themesSource\*.json" -Destination $themesDest -Force
+        if (-not (Test-Path $pieExe)) {
+            Exit-WithError "Binary not found in the extracted archive"
         }
 
+        Write-Info "Installed to: $pieExe"
 
-        # Rename to pie.exe if needed
-        $targetName = "pie.exe"
-        if ($binary.Name -ne $targetName) {
-            Move-Item $binary.FullName (Join-Path $binary.Directory $targetName) -Force
-        }
-
-        $installDir = Get-InstallDir
-        New-Item -ItemType Directory -Force -Path $installDir | Out-Null
-        Copy-Item (Join-Path $binary.Directory $targetName) (Join-Path $installDir $targetName) -Force
-
-        Write-Info "Installed to: $installDir\pie.exe"
-
-        # Check PATH
+        # Add libDir to the user PATH if not already present
         $userPath = [Environment]::GetEnvironmentVariable("PATH", "User")
-        if ($userPath -notlike "*$installDir*") {
-            Write-Warn "NOTE: $installDir is not in your PATH."
-            Write-Warn "Add it by running (as Administrator):"
-            Write-Warn "  [Environment]::SetEnvironmentVariable('PATH', [Environment]::GetEnvironmentVariable('PATH', 'User') + ';$installDir', 'User')"
+        if ($userPath -notlike "*$libDir*") {
+            $newPath = if ($userPath) { "$userPath;$libDir" } else { $libDir }
+            [Environment]::SetEnvironmentVariable("PATH", $newPath, "User")
+            Write-Info "Added $libDir to your user PATH"
+            Write-Warn "Restart your terminal for the PATH change to take effect"
         }
 
         Write-Info "Run 'pie --help' to get started"
