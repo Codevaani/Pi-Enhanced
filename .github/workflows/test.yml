@@ -34,5 +34,10 @@ jobs:
     - name: Check
       run: npm run check
 
+    - name: Install macOS dependencies
+      if: matrix.os == 'macos-latest'
+      run: brew install fd ripgrep
+
     - name: Run tests
       run: bash ./test.sh
+
