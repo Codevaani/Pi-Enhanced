@@ -1,17 +1,17 @@
 # Changelog
 
-## [1.0.3] - 2026-06-25
+## [0.0.1] - 2026-06-25
 
 ### Added
 
-- Added `pi uninstall` command — self-uninstalls the CLI by deleting the binary and `~/.pie/agent` config directory. Works on Linux, macOS, and Windows.
+- Added `pie uninstall` command — self-uninstalls the CLI by deleting the binary and `~/.pie/agent` config directory. Works on Linux, macOS, and Windows.
 - Added `self-uninstall` command type to package manager CLI.
 
 ### Changed
 
 - Switched version check from pi.dev API to GitHub Releases API (`api.github.com/repos/Codevaani/Pi-Enhanced/releases/latest`).
 - Simplified install method detection — only `bun-binary` and `unknown` remain. Removed all npm/pnpm/yarn/bun package manager code paths.
-- Self-update (`pi update --self`) now shows the GitHub Releases download URL instead of running npm/pnpm/yarn/bun commands.
+- Self-update (`pie update --self`) now shows the GitHub Releases download URL instead of running npm/pnpm/yarn/bun commands.
 
 ### Removed
 
