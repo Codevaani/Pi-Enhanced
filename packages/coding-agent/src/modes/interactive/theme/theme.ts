@@ -1,5 +1,4 @@
 import * as fs from "node:fs";
-import { createRequire } from "node:module";
 import * as path from "node:path";
 import {
 	type EditorTheme,
@@ -16,10 +15,6 @@ import { getCustomThemesDir, getThemesDir } from "../../../config.ts";
 import type { SourceInfo } from "../../../core/source-info.ts";
 import { closeWatcher, watchWithErrorHandler } from "../../../utils/fs-watch.ts";
 import { highlight, supportsLanguage } from "../../../utils/syntax-highlight.ts";
-
-const require = createRequire(import.meta.url);
-const darkTheme = require("./dark.json");
-const lightTheme = require("./light.json");
 
 // ============================================================================
 // Types & Schema
@@ -436,20 +431,11 @@ let BUILTIN_THEMES: Record<string, ThemeJson> | undefined;
 
 function getBuiltinThemes(): Record<string, ThemeJson> {
 	if (!BUILTIN_THEMES) {
-		BUILTIN_THEMES = {
-			dark: darkTheme as ThemeJson,
-			light: lightTheme as ThemeJson,
-		};
+		BUILTIN_THEMES = {};
 		const themesDir = getThemesDir();
 		if (fs.existsSync(themesDir)) {
 			for (const entry of fs.readdirSync(themesDir)) {
-				if (
-					!entry.endsWith(".json") ||
-					entry === "theme-schema.json" ||
-					entry === "dark.json" ||
-					entry === "light.json"
-				)
-					continue;
+				if (!entry.endsWith(".json") || entry === "theme-schema.json") continue;
 				const filePath = path.join(themesDir, entry);
 				try {
 					const theme = JSON.parse(fs.readFileSync(filePath, "utf-8")) as ThemeJson;

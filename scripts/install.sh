@@ -5,6 +5,11 @@
 #
 # Supported platforms:
 #   Linux (x64, arm64), macOS (x64, arm64), Windows (x64, arm64) via WSL/Cygwin/MSYS2
+#
+# The binary and all required assets (themes, export-html templates, assets) are
+# installed to a lib directory (~/.local/share/pie/) and the binary is symlinked
+# into the PATH directory (~/.local/bin/). This ensures the binary can locate its
+# adjacent asset directories at runtime via process.execPath.
 
 set -euo pipefail
 
@@ -59,8 +64,8 @@ resolve_url() {
     fi
 }
 
-# Detect install directory
-detect_install_dir() {
+# Detect bin directory (where the symlink / exe goes into PATH)
+detect_bin_dir() {
     if [ -n "$INSTALL_DIR" ]; then
         echo "$INSTALL_DIR"
         return
@@ -77,6 +82,11 @@ detect_install_dir() {
     fi
 }
 
+# Detect lib directory (where binary + assets are stored so they stay together)
+detect_lib_dir() {
+    echo "$HOME/.local/share/pie"
+}
+
 # Main install
 main() {
     info "Detecting platform..."
@@ -90,77 +100,75 @@ main() {
 
     local tmpdir
     tmpdir=$(mktemp -d)
+    trap 'rm -rf "$tmpdir"' EXIT
     cd "$tmpdir"
 
     if echo "$platform" | grep -q "\.zip$"; then
+        # Windows
         curl -fsSL "$url" -o pie.zip
         unzip -q pie.zip -d pie-extracted
-        # Find the binary (could be pi.exe or pie.exe in the extracted dir)
+
+        local bin_dir
+        bin_dir=$(detect_bin_dir)
+        mkdir -p "$bin_dir"
+
+        # Find the binary
         local binary
         binary=$(find pie-extracted -name "pie.exe" -o -name "pi.exe" 2>/dev/null | head -1)
         if [ -z "$binary" ]; then
             error "Binary not found in the archive"
         fi
-        mv "$binary" pie.exe
+        cp "$binary" "$bin_dir/pie.exe"
+        chmod +x "$bin_dir/pie.exe"
+
+        info "Installed to: $bin_dir/pie.exe"
+        info "Run 'pie --help' to get started"
     else
+        # Unix (Linux / macOS)
         curl -fsSL "$url" | tar -xz
-        # Copy themes to ~/.pie/agent/themes
-        if [ -d "pie/theme" ]; then
-            mkdir -p "$HOME/.pie/agent/themes"
-            cp -r pie/theme/*.json "$HOME/.pie/agent/themes/" 2>/dev/null || true
-        fi
-        # After extraction, the binary is inside pie/ directory
-        if [ -f "pie/pie" ]; then
-            mv pie/pie ./pie_tmp
-            rm -rf pie
-            mv pie_tmp pie
-        elif [ -f "pie/pi" ]; then
-            mv pie/pi ./pi_tmp
-            rm -rf pie
-            mv pi_tmp pi
+        # After extraction the archive contains a pie/ directory with the binary and assets
+
+        local lib_dir bin_dir
+        lib_dir=$(detect_lib_dir)
+        bin_dir=$(detect_bin_dir)
+
+        # Remove old installation and replace with new one
+        rm -rf "$lib_dir"
+        mkdir -p "$lib_dir"
+
+        # Copy the full archive contents to lib_dir so assets stay next to the binary
+        cp -r pie/. "$lib_dir/"
+
+        # Determine binary name
+        local binary_path=""
+        if [ -f "$lib_dir/pie" ]; then
+            binary_path="$lib_dir/pie"
+        elif [ -f "$lib_dir/pi" ]; then
+            # Rename to pie for consistency
+            mv "$lib_dir/pi" "$lib_dir/pie"
+            binary_path="$lib_dir/pie"
         else
-            error "Binary not found in the archive"
+            error "Binary not found in the extracted archive"
         fi
+
+        chmod +x "$binary_path"
+
+        # Symlink from bin_dir into lib_dir
+        # On Linux/macOS, process.execPath resolves symlinks via /proc/self/exe or dyld,
+        # so the binary sees lib_dir as its home and finds theme/, export-html/, assets/ there.
+        mkdir -p "$bin_dir"
+        ln -sf "$binary_path" "$bin_dir/pie"
+
+        info "Installed to: $bin_dir/pie"
+        info "Run 'pie --help' to get started"
     fi
 
-    local install_dir
-    install_dir=$(detect_install_dir)
-
-    # Determine binary name
-    local binary_name="pie"
-    if echo "$platform" | grep -q "windows"; then
-        if [ -f "pie.exe" ]; then
-            binary_name="pie.exe"
-        else
-            binary_name="pi.exe"
-        fi
-    else
-        if [ -f "pie" ]; then
-            binary_name="pie"
-        else
-            binary_name="pi"
-        fi
-    fi
-
-    # Rename to pie
-    if [ "$binary_name" != "pie" ] && [ "$binary_name" != "pie.exe" ]; then
-        mv "$binary_name" "pie${binary_name##*pi}"
-    fi
-
-    chmod +x pie*
-    mkdir -p "$install_dir"
-    mv pie* "$install_dir/"
-
-    cd /
-    rm -rf "$tmpdir"
-
-    info "Installed to: $install_dir/pie"
-    info "Run 'pie --help' to get started"
-
-    if ! echo "$PATH" | tr ':' '\n' | grep -q "$install_dir"; then
-        warn "NOTE: $install_dir is not in your PATH."
+    local bin_dir
+    bin_dir=$(detect_bin_dir)
+    if ! echo "$PATH" | tr ':' '\n' | grep -qx "$bin_dir"; then
+        warn "NOTE: $bin_dir is not in your PATH."
         warn "Add it by running:"
-        warn "  export PATH=\"\$PATH:$install_dir\""
+        warn "  export PATH=\"\$PATH:$bin_dir\""
     fi
 }
 
