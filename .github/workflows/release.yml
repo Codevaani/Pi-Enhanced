@@ -103,5 +103,7 @@ jobs:
           packages/coding-agent/binaries/pie-*.tar.gz
           packages/coding-agent/binaries/pie-*.zip
           packages/coding-agent/binaries/SHA256SUMS
+          scripts/install.sh
+          scripts/install.ps1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
