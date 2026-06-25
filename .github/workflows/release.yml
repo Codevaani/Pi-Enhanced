@@ -80,14 +80,24 @@ jobs:
         RESOLVED_VERSION=$(node -p "require('./package.json').version")
         echo "Resolved version: $RESOLVED_VERSION"
         
-        # Commit updated files
+        # Commit updated files if there are changes
         git add package.json package-lock.json packages/*/package.json packages/coding-agent/npm-shrinkwrap.json
-        git commit -m "Release v$RESOLVED_VERSION"
-        git tag "v$RESOLVED_VERSION"
+        if ! git diff --cached --quiet; then
+          echo "Changes detected. Committing and pushing..."
+          git commit -m "Release v$RESOLVED_VERSION"
+          git push origin main
+        else
+          echo "No version changes detected. Skipping commit."
+        fi
         
-        # Push commit and tag
-        git push origin main
-        git push origin "v$RESOLVED_VERSION"
+        # Tag and push tag (allow failure if tag already exists)
+        if git rev-parse "v$RESOLVED_VERSION" >/dev/null 2>&1; then
+          echo "Tag v$RESOLVED_VERSION already exists locally."
+        else
+          git tag "v$RESOLVED_VERSION"
+        fi
+        git push origin "v$RESOLVED_VERSION" || echo "Tag v$RESOLVED_VERSION might already exist on remote."
+
         
         # Save resolved version for subsequent release creation step
         echo "NEW_RELEASE_VERSION=v$RESOLVED_VERSION" >> $GITHUB_ENV
