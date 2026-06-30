@@ -17,13 +17,7 @@ Pi ships with powerful defaults but skips features like sub agents and plan mode
 ## Quick Start
 
 ```bash
-npm install -g --ignore-scripts @earendil-works/pie-coding-agent
-```
-
-Or use the installer:
-
-```bash
-curl -fsSL https://pi.dev/install.sh | sh
+npm install -g --ignore-scripts @codevaani7838/pie-coding-agent
 ```
 
 Authenticate:

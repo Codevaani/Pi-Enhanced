@@ -94,7 +94,7 @@ export {
 	type WriteToolOptions,
 } from "./write.ts";
 
-import type { AgentTool } from "@earendil-works/pie-agent-core";
+import type { AgentTool } from "@codevaani7838/pie-agent-core";
 import type { ToolDefinition } from "../extensions/types.ts";
 import { type AstEditToolOptions, createAstEditTool, createAstEditToolDefinition } from "./ast-edit.ts";
 import { createAstGrepTool, createAstGrepToolDefinition } from "./ast-grep.ts";

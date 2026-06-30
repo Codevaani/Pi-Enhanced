@@ -13,7 +13,7 @@
  * Try it in a project containing .pi, AGENTS.md/CLAUDE.md, or .agents/skills.
  */
 
-import type { ExtensionAPI, ProjectTrustEventResult } from "@earendil-works/pie-coding-agent";
+import type { ExtensionAPI, ProjectTrustEventResult } from "@codevaani7838/pie-coding-agent";
 
 export default function (pi: ExtensionAPI) {
 	let loadCount = 0;

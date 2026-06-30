@@ -9,12 +9,12 @@ test("detectInstallMethod returns unknown when not running as bun-binary", () =>
 	expect(detectInstallMethod()).toBe("unknown");
 });
 
-test("getSelfUpdateUnavailableInstruction returns GitHub download URL", () => {
-	const result = getSelfUpdateUnavailableInstruction("@earendil-works/pie-coding-agent");
-	expect(result).toBe("Download from: https://github.com/Codevaani/Pi-Enhanced/releases/latest");
+test("getSelfUpdateUnavailableInstruction returns empty string", () => {
+	const result = getSelfUpdateUnavailableInstruction("@codevaani7838/pie-coding-agent");
+	expect(result).toBe("");
 });
 
-test("getUpdateInstruction returns GitHub download URL", () => {
-	const result = getUpdateInstruction("@earendil-works/pie-coding-agent");
-	expect(result).toBe("Download from: https://github.com/Codevaani/Pi-Enhanced/releases/latest");
+test("getUpdateInstruction returns empty string", () => {
+	const result = getUpdateInstruction("@codevaani7838/pie-coding-agent");
+	expect(result).toBe("");
 });

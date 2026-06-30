@@ -1,5 +1,5 @@
-import type { AgentTool } from "@earendil-works/pie-agent-core";
-import { Container, Text } from "@earendil-works/pie-tui";
+import type { AgentTool } from "@codevaani7838/pie-agent-core";
+import { Container, Text } from "@codevaani7838/pie-tui";
 import { mkdir as fsMkdir, writeFile as fsWriteFile } from "fs/promises";
 import { dirname } from "path";
 import { type Static, Type } from "typebox";

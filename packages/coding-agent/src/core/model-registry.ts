@@ -17,8 +17,8 @@ import {
 	registerApiProvider,
 	resetApiProviders,
 	type SimpleStreamOptions,
-} from "@earendil-works/pie-ai";
-import { registerOAuthProvider, resetOAuthProviders } from "@earendil-works/pie-ai/oauth";
+} from "@codevaani7838/pie-ai";
+import { registerOAuthProvider, resetOAuthProviders } from "@codevaani7838/pie-ai/oauth";
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { type Static, Type } from "typebox";

@@ -5,7 +5,7 @@
  * When forking, offers to restore code to that point in history.
  */
 
-import type { ExtensionAPI } from "@earendil-works/pie-coding-agent";
+import type { ExtensionAPI } from "@codevaani7838/pie-coding-agent";
 
 export default function (pi: ExtensionAPI) {
 	const checkpoints = new Map<string, string>();

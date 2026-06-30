@@ -7,7 +7,7 @@ import {
 	Spacer,
 	Text,
 	type TUI,
-} from "@earendil-works/pie-tui";
+} from "@codevaani7838/pie-tui";
 import type { ToolDefinition, ToolRenderContext } from "../../../core/extensions/types.ts";
 import { createAllToolDefinitions, type ToolName } from "../../../core/tools/index.ts";
 import { getTextOutput as getRenderedTextOutput } from "../../../core/tools/render-utils.ts";

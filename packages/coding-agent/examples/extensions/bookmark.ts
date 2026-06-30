@@ -7,7 +7,7 @@
  * Usage: /bookmark [label] - bookmark the last assistant message
  */
 
-import type { ExtensionAPI } from "@earendil-works/pie-coding-agent";
+import type { ExtensionAPI } from "@codevaani7838/pie-coding-agent";
 
 export default function (pi: ExtensionAPI) {
 	pi.registerCommand("bookmark", {

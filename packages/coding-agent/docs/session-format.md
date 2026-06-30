@@ -34,7 +34,7 @@ Source on GitHub ([pi-mono](https://github.com/earendil-works/pi-mono)):
 - [`packages/ai/src/types.ts`](https://github.com/earendil-works/pi-mono/blob/main/packages/ai/src/types.ts) - Base message types (UserMessage, AssistantMessage, ToolResultMessage)
 - [`packages/agent/src/types.ts`](https://github.com/earendil-works/pi-mono/blob/main/packages/agent/src/types.ts) - AgentMessage union type
 
-For TypeScript definitions in your project, inspect `node_modules/@earendil-works/pie-coding-agent/dist/` and `node_modules/@earendil-works/pie-ai/dist/`.
+For TypeScript definitions in your project, inspect `node_modules/@codevaani7838/pie-coding-agent/dist/` and `node_modules/@codevaani7838/pie-ai/dist/`.
 
 ## Message Types
 

@@ -1,5 +1,5 @@
-import type { AgentMessage } from "@earendil-works/pie-agent-core";
-import type { AssistantMessage, Model } from "@earendil-works/pie-ai";
+import type { AgentMessage } from "@codevaani7838/pie-agent-core";
+import type { AssistantMessage, Model } from "@codevaani7838/pie-ai";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { type CompactionPreparation, compact, generateSummary } from "../src/core/compaction/index.ts";
 
@@ -7,8 +7,8 @@ const { completeSimpleMock } = vi.hoisted(() => ({
 	completeSimpleMock: vi.fn(),
 }));
 
-vi.mock("@earendil-works/pie-ai", async (importOriginal) => {
-	const actual = await importOriginal<typeof import("@earendil-works/pie-ai")>();
+vi.mock("@codevaani7838/pie-ai", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("@codevaani7838/pie-ai")>();
 	return {
 		...actual,
 		completeSimple: completeSimpleMock,

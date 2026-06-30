@@ -5,7 +5,7 @@
  * from cwd and ~/.pie/agent. Model chosen from settings or first available.
  */
 
-import { createAgentSession } from "@earendil-works/pie-coding-agent";
+import { createAgentSession } from "@codevaani7838/pie-coding-agent";
 
 const { session } = await createAgentSession();
 

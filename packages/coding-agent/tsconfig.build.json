@@ -3,12 +3,12 @@
 	"compilerOptions": {
 		"outDir": "./dist",
 		"paths": {
-			"@earendil-works/pie-agent-core": ["../agent/dist/index.d.ts"],
-			"@earendil-works/pie-agent-core/*": ["../agent/dist/*.d.ts"],
-			"@earendil-works/pie-ai": ["../ai/dist/index.d.ts"],
-			"@earendil-works/pie-ai/*": ["../ai/dist/*.d.ts", "../ai/dist/providers/*.d.ts"],
-			"@earendil-works/pie-tui": ["../tui/dist/index.d.ts"],
-			"@earendil-works/pie-tui/*": ["../tui/dist/*.d.ts", "../tui/dist/components/*.d.ts"]
+			"@codevaani7838/pie-agent-core": ["../agent/dist/index.d.ts"],
+			"@codevaani7838/pie-agent-core/*": ["../agent/dist/*.d.ts"],
+			"@codevaani7838/pie-ai": ["../ai/dist/index.d.ts"],
+			"@codevaani7838/pie-ai/*": ["../ai/dist/*.d.ts", "../ai/dist/providers/*.d.ts"],
+			"@codevaani7838/pie-tui": ["../tui/dist/index.d.ts"],
+			"@codevaani7838/pie-tui/*": ["../tui/dist/*.d.ts", "../tui/dist/components/*.d.ts"]
 		},
 		"rootDir": "./src"
 	},

@@ -3,10 +3,10 @@
 	"compilerOptions": {
 		"noEmit": true,
 		"paths": {
-			"@earendil-works/pie-coding-agent": ["./src/index.ts"],
-			"@earendil-works/pie-coding-agent/hooks": ["./src/core/hooks/index.ts"],
-			"@earendil-works/pie-tui": ["../tui/src/index.ts"],
-			"@earendil-works/pie-ai": ["../ai/src/index.ts"],
+			"@codevaani7838/pie-coding-agent": ["./src/index.ts"],
+			"@codevaani7838/pie-coding-agent/hooks": ["./src/core/hooks/index.ts"],
+			"@codevaani7838/pie-tui": ["../tui/src/index.ts"],
+			"@codevaani7838/pie-ai": ["../ai/src/index.ts"],
 			"typebox": ["../../node_modules/typebox"]
 		},
 		"skipLibCheck": true

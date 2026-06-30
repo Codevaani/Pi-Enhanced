@@ -1,4 +1,4 @@
-import { setKeybindings } from "@earendil-works/pie-tui";
+import { setKeybindings } from "@codevaani7838/pie-tui";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { KeybindingsManager } from "../src/core/keybindings.ts";
 import type { SessionInfo } from "../src/core/session-manager.ts";

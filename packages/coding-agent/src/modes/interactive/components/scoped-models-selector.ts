@@ -1,4 +1,4 @@
-import type { Model } from "@earendil-works/pie-ai";
+import type { Model } from "@codevaani7838/pie-ai";
 import {
 	Container,
 	type Focusable,
@@ -9,7 +9,7 @@ import {
 	matchesKey,
 	Spacer,
 	Text,
-} from "@earendil-works/pie-tui";
+} from "@codevaani7838/pie-tui";
 import { theme } from "../theme/theme.ts";
 import { DynamicBorder } from "./dynamic-border.ts";
 import { keyText } from "./keybinding-hints.ts";

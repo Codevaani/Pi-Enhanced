@@ -4,7 +4,7 @@
  * Override settings using SettingsManager.
  */
 
-import { createAgentSession, SessionManager, SettingsManager } from "@earendil-works/pie-coding-agent";
+import { createAgentSession, SessionManager, SettingsManager } from "@codevaani7838/pie-coding-agent";
 
 const cwd = process.cwd();
 

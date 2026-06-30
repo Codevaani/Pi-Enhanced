@@ -4,7 +4,7 @@
  * Replace everything - no discovery, explicit configuration.
  */
 
-import { getModel } from "@earendil-works/pie-ai";
+import { getModel } from "@codevaani7838/pie-ai";
 import {
 	AuthStorage,
 	createAgentSession,
@@ -13,7 +13,7 @@ import {
 	type ResourceLoader,
 	SessionManager,
 	SettingsManager,
-} from "@earendil-works/pie-coding-agent";
+} from "@codevaani7838/pie-coding-agent";
 
 // Custom auth storage location
 const authStorage = AuthStorage.create("/tmp/my-agent/auth.json");

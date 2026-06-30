@@ -1,4 +1,4 @@
-import type { Message } from "@earendil-works/pie-ai";
+import type { Message } from "@codevaani7838/pie-ai";
 import type { AgentMessage } from "../../types.ts";
 
 /** File paths touched by a session branch or compaction range. */

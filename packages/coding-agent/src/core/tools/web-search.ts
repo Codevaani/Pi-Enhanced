@@ -1,5 +1,5 @@
-import type { AgentTool } from "@earendil-works/pie-agent-core";
-import { Text } from "@earendil-works/pie-tui";
+import type { AgentTool } from "@codevaani7838/pie-agent-core";
+import { Text } from "@codevaani7838/pie-tui";
 import { type Static, Type } from "typebox";
 import type { Theme } from "../../modes/interactive/theme/theme.ts";
 import type {

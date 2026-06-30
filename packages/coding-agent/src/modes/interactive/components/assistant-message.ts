@@ -1,5 +1,5 @@
-import type { AssistantMessage } from "@earendil-works/pie-ai";
-import { Container, Markdown, type MarkdownTheme, Spacer, Text } from "@earendil-works/pie-tui";
+import type { AssistantMessage } from "@codevaani7838/pie-ai";
+import { Container, Markdown, type MarkdownTheme, Spacer, Text } from "@codevaani7838/pie-tui";
 import { getMarkdownTheme, theme } from "../theme/theme.ts";
 
 const OSC133_ZONE_START = "\x1b]133;A\x07";

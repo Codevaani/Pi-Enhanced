@@ -1,5 +1,5 @@
-import { Agent } from "@earendil-works/pie-agent-core";
-import { type AssistantMessage, getModel, type Usage } from "@earendil-works/pie-ai";
+import { Agent } from "@codevaani7838/pie-agent-core";
+import { type AssistantMessage, getModel, type Usage } from "@codevaani7838/pie-ai";
 import { describe, expect, it } from "vitest";
 import { AgentSession } from "../src/core/agent-session.ts";
 import { AuthStorage } from "../src/core/auth-storage.ts";

@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { AgentMessage } from "@earendil-works/pie-agent-core";
+import type { AgentMessage } from "@codevaani7838/pie-agent-core";
 import { afterEach } from "vitest";
 
 export function createUserMessage(text: string): AgentMessage {

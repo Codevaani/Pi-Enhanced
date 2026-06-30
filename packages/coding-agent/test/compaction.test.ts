@@ -1,6 +1,6 @@
-import type { AgentMessage } from "@earendil-works/pie-agent-core";
-import type { AssistantMessage, Usage } from "@earendil-works/pie-ai";
-import { getModel } from "@earendil-works/pie-ai";
+import type { AgentMessage } from "@codevaani7838/pie-agent-core";
+import type { AssistantMessage, Usage } from "@codevaani7838/pie-ai";
+import { getModel } from "@codevaani7838/pie-ai";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { beforeEach, describe, expect, it } from "vitest";

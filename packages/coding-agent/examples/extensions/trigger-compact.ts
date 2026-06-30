@@ -1,4 +1,4 @@
-import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pie-coding-agent";
+import type { ExtensionAPI, ExtensionContext } from "@codevaani7838/pie-coding-agent";
 
 const COMPACT_THRESHOLD_TOKENS = 100_000;
 

@@ -4,7 +4,7 @@ import {
 	type Model,
 	streamSimple,
 	type UserMessage,
-} from "@earendil-works/pie-ai";
+} from "@codevaani7838/pie-ai";
 import { runAgentLoop } from "../agent-loop.ts";
 import type {
 	AgentContext,

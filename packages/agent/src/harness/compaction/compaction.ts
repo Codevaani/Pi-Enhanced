@@ -1,5 +1,5 @@
-import type { AssistantMessage, ImageContent, Model, TextContent, Usage } from "@earendil-works/pie-ai";
-import { completeSimple } from "@earendil-works/pie-ai";
+import type { AssistantMessage, ImageContent, Model, TextContent, Usage } from "@codevaani7838/pie-ai";
+import { completeSimple } from "@codevaani7838/pie-ai";
 import type { AgentMessage, ThinkingLevel } from "../../types.ts";
 import {
 	convertToLlm,

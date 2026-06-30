@@ -5,9 +5,9 @@
  * a summary of the branch being left so context isn't lost.
  */
 
-import type { AgentMessage, StreamFn } from "@earendil-works/pie-agent-core";
-import type { Model, SimpleStreamOptions } from "@earendil-works/pie-ai";
-import { completeSimple } from "@earendil-works/pie-ai";
+import type { AgentMessage, StreamFn } from "@codevaani7838/pie-agent-core";
+import type { Model, SimpleStreamOptions } from "@codevaani7838/pie-ai";
+import { completeSimple } from "@codevaani7838/pie-ai";
 import {
 	convertToLlm,
 	createBranchSummaryMessage,

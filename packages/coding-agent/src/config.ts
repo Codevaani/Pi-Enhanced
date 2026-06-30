@@ -35,11 +35,11 @@ export function detectInstallMethod(): InstallMethod {
 }
 
 export function getSelfUpdateUnavailableInstruction(_packageName: string): string {
-	return `Download from: https://github.com/Codevaani/Pi-Enhanced/releases/latest`;
+	return "";
 }
 
 export function getUpdateInstruction(packageName: string): string {
-	return getSelfUpdateUnavailableInstruction(packageName);
+	return "";
 }
 
 // =============================================================================
@@ -173,7 +173,7 @@ try {
 }
 
 const pieConfigName: string | undefined = pkg.pieConfig?.name;
-export const PACKAGE_NAME: string = pkg.name || "@earendil-works/pie-coding-agent";
+export const PACKAGE_NAME: string = pkg.name || "@codevaani7838/pie-coding-agent";
 export const APP_NAME: string = pieConfigName || "pie";
 export const APP_TITLE: string = pieConfigName ? APP_NAME : "π";
 export const CONFIG_DIR_NAME: string = pkg.pieConfig?.configDir || ".pie";

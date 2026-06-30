@@ -1,7 +1,5 @@
 import { compare, valid } from "semver";
-import { getPieUserAgent } from "./pie-user-agent.ts";
 
-const LATEST_VERSION_URL = "https://api.github.com/repos/Codevaani/Pi-Enhanced/releases/latest";
 const DEFAULT_VERSION_CHECK_TIMEOUT_MS = 10000;
 
 export interface LatestPiRelease {
@@ -31,32 +29,7 @@ export async function getLatestPiRelease(
 	currentVersion: string,
 	options: { timeoutMs?: number } = {},
 ): Promise<LatestPiRelease | undefined> {
-	if (process.env.PI_SKIP_VERSION_CHECK || process.env.PI_OFFLINE) return undefined;
-
-	const response = await fetch(LATEST_VERSION_URL, {
-		headers: {
-			"User-Agent": getPieUserAgent(currentVersion),
-			accept: "application/json",
-		},
-		signal: AbortSignal.timeout(options.timeoutMs ?? DEFAULT_VERSION_CHECK_TIMEOUT_MS),
-	});
-	if (!response.ok) return undefined;
-
-	const data = (await response.json()) as {
-		tag_name?: string;
-		name?: string;
-		body?: string;
-	};
-
-	if (typeof data.tag_name !== "string" || !data.tag_name.trim()) {
-		return undefined;
-	}
-
-	const version = data.tag_name.replace(/^v/, "").trim();
-
-	return {
-		version,
-	};
+	return undefined;
 }
 
 export async function getLatestPiVersion(

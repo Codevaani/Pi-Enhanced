@@ -1,6 +1,6 @@
-import type { AgentMessage } from "@earendil-works/pie-agent-core";
-import type { AssistantMessage, ToolResultMessage, Usage } from "@earendil-works/pie-ai";
-import { Container, Text, type TUI } from "@earendil-works/pie-tui";
+import type { AgentMessage } from "@codevaani7838/pie-agent-core";
+import type { AssistantMessage, ToolResultMessage, Usage } from "@codevaani7838/pie-ai";
+import { Container, Text, type TUI } from "@codevaani7838/pie-tui";
 import { beforeAll, describe, expect, test, vi } from "vitest";
 import type { AgentSessionEvent } from "../../../src/core/agent-session.ts";
 import type { SessionContext } from "../../../src/core/session-manager.ts";

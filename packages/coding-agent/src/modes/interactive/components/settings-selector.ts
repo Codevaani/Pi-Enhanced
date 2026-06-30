@@ -1,5 +1,5 @@
-import type { ThinkingLevel } from "@earendil-works/pie-agent-core";
-import type { Transport } from "@earendil-works/pie-ai";
+import type { ThinkingLevel } from "@codevaani7838/pie-agent-core";
+import type { Transport } from "@codevaani7838/pie-ai";
 import {
 	Container,
 	getCapabilities,
@@ -10,7 +10,7 @@ import {
 	SettingsList,
 	Spacer,
 	Text,
-} from "@earendil-works/pie-tui";
+} from "@codevaani7838/pie-tui";
 import { formatHttpIdleTimeoutMs, HTTP_IDLE_TIMEOUT_CHOICES } from "../../../core/http-dispatcher.ts";
 import type { DefaultProjectTrust, WarningSettings } from "../../../core/settings-manager.ts";
 import { getSelectListTheme, getSettingsListTheme, theme } from "../theme/theme.ts";

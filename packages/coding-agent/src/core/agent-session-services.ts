@@ -1,6 +1,6 @@
 import { join } from "node:path";
-import type { ThinkingLevel } from "@earendil-works/pie-agent-core";
-import type { Model } from "@earendil-works/pie-ai";
+import type { ThinkingLevel } from "@codevaani7838/pie-agent-core";
+import type { Model } from "@codevaani7838/pie-ai";
 import { getAgentDir } from "../config.ts";
 import { resolvePath } from "../utils/paths.ts";
 import { AuthStorage } from "./auth-storage.ts";

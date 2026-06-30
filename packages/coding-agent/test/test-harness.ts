@@ -10,8 +10,8 @@
 import { existsSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { AgentTool } from "@earendil-works/pie-agent-core";
-import { Agent } from "@earendil-works/pie-agent-core";
+import type { AgentTool } from "@codevaani7838/pie-agent-core";
+import { Agent } from "@codevaani7838/pie-agent-core";
 import type {
 	AssistantMessage,
 	AssistantMessageEvent,
@@ -24,8 +24,8 @@ import type {
 	ThinkingContent,
 	ToolCall,
 	Usage,
-} from "@earendil-works/pie-ai";
-import { createAssistantMessageEventStream } from "@earendil-works/pie-ai";
+} from "@codevaani7838/pie-ai";
+import { createAssistantMessageEventStream } from "@codevaani7838/pie-ai";
 import { AgentSession, type AgentSessionEvent } from "../src/core/agent-session.ts";
 import { AuthStorage } from "../src/core/auth-storage.ts";
 import { ModelRegistry } from "../src/core/model-registry.ts";

@@ -1,6 +1,6 @@
-import type { TextContent } from "@earendil-works/pie-ai";
-import type { Component } from "@earendil-works/pie-tui";
-import { Box, Container, Markdown, type MarkdownTheme, Spacer, Text } from "@earendil-works/pie-tui";
+import type { TextContent } from "@codevaani7838/pie-ai";
+import type { Component } from "@codevaani7838/pie-tui";
+import { Box, Container, Markdown, type MarkdownTheme, Spacer, Text } from "@codevaani7838/pie-tui";
 import type { MessageRenderer } from "../../../core/extensions/types.ts";
 import type { CustomMessage } from "../../../core/messages.ts";
 import { getMarkdownTheme, theme } from "../theme/theme.ts";

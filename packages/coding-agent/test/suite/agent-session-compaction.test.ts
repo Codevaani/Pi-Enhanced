@@ -3,7 +3,7 @@ import {
 	createAssistantMessageEventStream,
 	fauxAssistantMessage,
 	type Model,
-} from "@earendil-works/pie-ai";
+} from "@codevaani7838/pie-ai";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createHarness, type Harness } from "./harness.ts";
 

@@ -16,7 +16,7 @@ import {
 	Spacer,
 	Text,
 	type TUI,
-} from "@earendil-works/pie-tui";
+} from "@codevaani7838/pie-tui";
 import type { KeybindingsManager } from "../../../core/keybindings.ts";
 import { getEditorTheme, theme } from "../theme/theme.ts";
 import { DynamicBorder } from "./dynamic-border.ts";

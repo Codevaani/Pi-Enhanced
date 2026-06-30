@@ -1,6 +1,6 @@
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { setKeybindings } from "@earendil-works/pie-tui";
+import { setKeybindings } from "@codevaani7838/pie-tui";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { KeybindingsManager } from "../src/core/keybindings.ts";
 import { TrustSelectorComponent } from "../src/modes/interactive/components/trust-selector.ts";

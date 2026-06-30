@@ -1,4 +1,4 @@
-import type { Api, Model } from "@earendil-works/pie-ai";
+import type { Api, Model } from "@codevaani7838/pie-ai";
 import type { SettingsManager } from "./settings-manager.ts";
 import { isInstallTelemetryEnabled } from "./telemetry.ts";
 

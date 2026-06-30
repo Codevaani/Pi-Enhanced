@@ -665,12 +665,10 @@ export async function handlePackageCommand(
 					}
 					const installMethod = detectInstallMethod();
 					if (installMethod === "bun-binary") {
-						console.log(chalk.dim(`Download from: https://github.com/Codevaani/Pi-Enhanced/releases/latest`));
 						process.exitCode = 1;
 						return true;
 					}
 					console.error(chalk.red(`${APP_NAME} self-update is not supported for this installation.`));
-					console.error(chalk.dim(`Download the latest version from the GitHub releases page.`));
 					process.exitCode = 1;
 					return true;
 				}

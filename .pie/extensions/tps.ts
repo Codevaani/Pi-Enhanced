@@ -1,5 +1,5 @@
-import type { AssistantMessage } from "@earendil-works/pie-ai";
-import type { ExtensionAPI } from "@earendil-works/pie-coding-agent";
+import type { AssistantMessage } from "@codevaani7838/pie-ai";
+import type { ExtensionAPI } from "@codevaani7838/pie-coding-agent";
 
 function isAssistantMessage(message: unknown): message is AssistantMessage {
 	if (!message || typeof message !== "object") return false;

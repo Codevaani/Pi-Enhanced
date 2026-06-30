@@ -5,8 +5,8 @@
  */
 
 import { type ChildProcess, spawn } from "node:child_process";
-import type { AgentEvent, AgentMessage, ThinkingLevel } from "@earendil-works/pie-agent-core";
-import type { ImageContent } from "@earendil-works/pie-ai";
+import type { AgentEvent, AgentMessage, ThinkingLevel } from "@codevaani7838/pie-agent-core";
+import type { ImageContent } from "@codevaani7838/pie-ai";
 import type { SessionStats } from "../../core/agent-session.ts";
 import type { BashResult } from "../../core/bash-executor.ts";
 import type { CompactionResult } from "../../core/compaction/index.ts";

@@ -12,10 +12,10 @@
  * The generated prompt appears as a draft in the editor for review/editing.
  */
 
-import type { AgentMessage } from "@earendil-works/pie-agent-core";
-import { complete, type Message } from "@earendil-works/pie-ai";
-import type { ExtensionAPI, SessionEntry } from "@earendil-works/pie-coding-agent";
-import { BorderedLoader, convertToLlm, serializeConversation } from "@earendil-works/pie-coding-agent";
+import type { AgentMessage } from "@codevaani7838/pie-agent-core";
+import { complete, type Message } from "@codevaani7838/pie-ai";
+import type { ExtensionAPI, SessionEntry } from "@codevaani7838/pie-coding-agent";
+import { BorderedLoader, convertToLlm, serializeConversation } from "@codevaani7838/pie-coding-agent";
 
 const SYSTEM_PROMPT = `You are a context transfer assistant. Given a conversation history and the user's goal for a new thread, generate a focused prompt that:
 

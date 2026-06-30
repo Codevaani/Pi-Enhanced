@@ -1,4 +1,4 @@
-import type { AssistantMessage } from "@earendil-works/pie-ai";
+import type { AssistantMessage } from "@codevaani7838/pie-ai";
 import { describe, expect, test } from "vitest";
 import { AssistantMessageComponent } from "../src/modes/interactive/components/assistant-message.ts";
 import { initTheme } from "../src/modes/interactive/theme/theme.ts";

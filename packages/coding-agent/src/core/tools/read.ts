@@ -1,7 +1,7 @@
 import { basename, dirname, isAbsolute, relative, resolve as resolvePath, sep } from "node:path";
-import type { AgentTool } from "@earendil-works/pie-agent-core";
-import type { Api, ImageContent, Model, TextContent } from "@earendil-works/pie-ai";
-import { Text } from "@earendil-works/pie-tui";
+import type { AgentTool } from "@codevaani7838/pie-agent-core";
+import type { Api, ImageContent, Model, TextContent } from "@codevaani7838/pie-ai";
+import { Text } from "@codevaani7838/pie-tui";
 import { constants } from "fs";
 import { access as fsAccess, readFile as fsReadFile } from "fs/promises";
 import { type Static, Type } from "typebox";

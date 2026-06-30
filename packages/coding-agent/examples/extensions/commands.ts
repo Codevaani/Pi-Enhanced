@@ -10,7 +10,7 @@
  * 3. Use /commands extensions to filter by source
  */
 
-import type { ExtensionAPI, SlashCommandInfo } from "@earendil-works/pie-coding-agent";
+import type { ExtensionAPI, SlashCommandInfo } from "@codevaani7838/pie-coding-agent";
 
 export default function commandsExtension(pi: ExtensionAPI) {
 	pi.registerCommand("commands", {

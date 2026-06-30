@@ -28,12 +28,10 @@
 		"prepublishOnly": "npm run clean && npm run build && npm run check",
 		"publish": "npm run prepublishOnly && node scripts/publish.mjs",
 		"publish:dry": "npm run prepublishOnly && node scripts/publish.mjs --dry-run",
-		"release:local": "node scripts/local-release.mjs",
 		"shrinkwrap:coding-agent": "node scripts/generate-coding-agent-shrinkwrap.mjs",
 		"release:patch": "node scripts/release.mjs patch",
 		"release:minor": "node scripts/release.mjs minor",
 		"release:major": "node scripts/release.mjs major",
-		"release:fix-links": "node scripts/release-notes.mjs fix-github-releases",
 		"prepare": "husky"
 	},
 	"devDependencies": {

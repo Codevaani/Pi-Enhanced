@@ -1,4 +1,4 @@
-import type { Component } from "@earendil-works/pie-tui";
+import type { Component } from "@codevaani7838/pie-tui";
 import { theme } from "../theme/theme.ts";
 
 /**

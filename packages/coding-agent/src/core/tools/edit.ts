@@ -1,5 +1,5 @@
-import type { AgentTool } from "@earendil-works/pie-agent-core";
-import { Box, Container, Spacer, Text } from "@earendil-works/pie-tui";
+import type { AgentTool } from "@codevaani7838/pie-agent-core";
+import { Box, Container, Spacer, Text } from "@codevaani7838/pie-tui";
 import { constants } from "fs";
 import { access as fsAccess, readFile as fsReadFile, writeFile as fsWriteFile } from "fs/promises";
 import { type Static, Type } from "typebox";

@@ -30,18 +30,9 @@ Pi-Enhanced (`pie`) is an open-source, highly extensible terminal-based coding a
 
 ## Installation
 
-### Linux & macOS (bash)
 ```bash
-curl -fsSL https://github.com/Codevaani/Pi-Enhanced/releases/latest/download/install.sh | bash
+npm install -g --ignore-scripts @codevaani7838/pie-coding-agent
 ```
-
-### Windows (PowerShell)
-```powershell
-iwr -Uri https://github.com/Codevaani/Pi-Enhanced/releases/latest/download/install.ps1 -UseBasicParsing | iex
-```
-
-### Manual Installation
-Download the binary matching your platform from the [Releases Page](https://github.com/Codevaani/Pi-Enhanced/releases), extract the archive, and add the executable to your system path.
 
 ---
 

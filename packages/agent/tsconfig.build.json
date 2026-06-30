@@ -3,8 +3,8 @@
 	"compilerOptions": {
 		"outDir": "./dist",
 		"paths": {
-			"@earendil-works/pie-ai": ["../ai/dist/index.d.ts"],
-			"@earendil-works/pie-ai/*": ["../ai/dist/*.d.ts", "../ai/dist/providers/*.d.ts"]
+			"@codevaani7838/pie-ai": ["../ai/dist/index.d.ts"],
+			"@codevaani7838/pie-ai/*": ["../ai/dist/*.d.ts", "../ai/dist/providers/*.d.ts"]
 		},
 		"rootDir": "./src"
 	},

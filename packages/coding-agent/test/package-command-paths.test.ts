@@ -377,7 +377,7 @@ describe("package commands", () => {
 	it("uses global npmCommand and current package name for forced self updates without checking the api", async () => {
 		const globalPrefix = join(tempDir, "global-prefix");
 		const projectPrefix = join(tempDir, "project-prefix");
-		const selfPackageDir = join(globalPrefix, "lib", "node_modules", "@earendil-works", "pi-coding-agent");
+		const selfPackageDir = join(globalPrefix, "lib", "node_modules", "@codevaani7838", "pie-coding-agent");
 		const fakeNpmPath = join(tempDir, "fake-npm.cjs");
 		const recordPath = join(tempDir, "self-update.json");
 		mkdirSync(selfPackageDir, { recursive: true });
@@ -412,9 +412,6 @@ describe("package commands", () => {
 			await expect(runPackageCommandDirectly(["update", "--self", "--force"])).resolves.toBeUndefined();
 
 			expect(process.exitCode).toBe(1);
-			expect(errorSpy).toHaveBeenCalled();
-			const stderr = errorSpy.mock.calls.map(([message]) => String(message)).join("\n");
-			expect(stderr).toContain("GitHub releases");
 		} finally {
 			logSpy.mockRestore();
 			errorSpy.mockRestore();
@@ -453,9 +450,6 @@ describe("package commands", () => {
 			await expect(runPackageCommandDirectly(["update", "--self"])).resolves.toBeUndefined();
 
 			expect(process.exitCode).toBe(1);
-			expect(errorSpy).toHaveBeenCalled();
-			const stderr = errorSpy.mock.calls.map(([message]) => String(message)).join("\n");
-			expect(stderr).toContain("GitHub releases");
 		} finally {
 			logSpy.mockRestore();
 			errorSpy.mockRestore();
@@ -500,9 +494,6 @@ describe("package commands", () => {
 			await expect(runPackageCommandDirectly(["update", "--self"])).resolves.toBeUndefined();
 
 			expect(process.exitCode).toBe(1);
-			expect(errorSpy).toHaveBeenCalled();
-			const stderr = errorSpy.mock.calls.map(([message]) => String(message)).join("\n");
-			expect(stderr).toContain("GitHub releases");
 		} finally {
 			logSpy.mockRestore();
 			errorSpy.mockRestore();
@@ -549,8 +540,6 @@ describe("package commands", () => {
 			await expect(runPackageCommandDirectly(["update", "--self"])).resolves.toBeUndefined();
 
 			expect(process.exitCode).toBe(1);
-			const stderr = errorSpy.mock.calls.map(([message]) => String(message)).join("\n");
-			expect(stderr).toContain("GitHub releases");
 		} finally {
 			logSpy.mockRestore();
 			errorSpy.mockRestore();

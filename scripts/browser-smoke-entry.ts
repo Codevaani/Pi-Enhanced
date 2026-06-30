@@ -1,4 +1,4 @@
-import { complete, createAssistantMessageEventStream, getModel, getProviders, Type } from "@earendil-works/pie-ai";
+import { complete, createAssistantMessageEventStream, getModel, getProviders, Type } from "@codevaani7838/pie-ai";
 import {
 	Agent,
 	bashExecutionToText,
@@ -15,7 +15,7 @@ import {
 	streamProxy,
 	toError,
 	truncateHead,
-} from "@earendil-works/pie-agent-core";
+} from "@codevaani7838/pie-agent-core";
 
 // Keep this entry browser-safe. It is bundled by scripts/check-browser-smoke.mjs
 // to catch accidental Node-only runtime imports in browser-facing package exports.

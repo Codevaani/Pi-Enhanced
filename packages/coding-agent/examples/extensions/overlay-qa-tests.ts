@@ -19,9 +19,9 @@
  *   /overlay-streaming  - Multiple input panels with simulated streaming (Tab to cycle focus)
  */
 
-import type { ExtensionAPI, ExtensionCommandContext, Theme } from "@earendil-works/pie-coding-agent";
-import type { Component, OverlayAnchor, OverlayHandle, OverlayOptions, TUI } from "@earendil-works/pie-tui";
-import { Input, matchesKey, truncateToWidth, visibleWidth } from "@earendil-works/pie-tui";
+import type { ExtensionAPI, ExtensionCommandContext, Theme } from "@codevaani7838/pie-coding-agent";
+import type { Component, OverlayAnchor, OverlayHandle, OverlayOptions, TUI } from "@codevaani7838/pie-tui";
+import { Input, matchesKey, truncateToWidth, visibleWidth } from "@codevaani7838/pie-tui";
 import { spawn } from "child_process";
 
 // Global handle for toggle demo (in real code, use a more elegant pattern)

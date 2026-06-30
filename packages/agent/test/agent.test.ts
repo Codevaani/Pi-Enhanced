@@ -1,4 +1,4 @@
-import { type AssistantMessage, type AssistantMessageEvent, EventStream, getModel } from "@earendil-works/pie-ai";
+import { type AssistantMessage, type AssistantMessageEvent, EventStream, getModel } from "@codevaani7838/pie-ai";
 import { Type } from "typebox";
 import { describe, expect, it } from "vitest";
 import { Agent, type AgentEvent, type AgentTool, type AgentToolUpdateCallback } from "../src/index.ts";

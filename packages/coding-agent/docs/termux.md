@@ -17,7 +17,7 @@ pkg update && pkg upgrade
 pkg install nodejs termux-api git
 
 # Install pi
-npm install -g --ignore-scripts @earendil-works/pie-coding-agent
+npm install -g --ignore-scripts @codevaani7838/pie-coding-agent
 
 # Create config directory
 mkdir -p ~/.pie/agent

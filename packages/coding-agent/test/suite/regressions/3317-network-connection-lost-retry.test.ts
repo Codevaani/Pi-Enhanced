@@ -1,4 +1,4 @@
-import { fauxAssistantMessage } from "@earendil-works/pie-ai";
+import { fauxAssistantMessage } from "@codevaani7838/pie-ai";
 import { afterEach, describe, expect, it } from "vitest";
 import { createHarness, getAssistantTexts, type Harness } from "../harness.ts";
 

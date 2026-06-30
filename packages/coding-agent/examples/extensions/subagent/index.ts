@@ -16,11 +16,11 @@ import { spawn } from "node:child_process";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { AgentToolResult } from "@earendil-works/pie-agent-core";
-import type { Message } from "@earendil-works/pie-ai";
-import { StringEnum } from "@earendil-works/pie-ai";
-import { type ExtensionAPI, getMarkdownTheme, withFileMutationQueue } from "@earendil-works/pie-coding-agent";
-import { Container, Markdown, Spacer, Text } from "@earendil-works/pie-tui";
+import type { AgentToolResult } from "@codevaani7838/pie-agent-core";
+import type { Message } from "@codevaani7838/pie-ai";
+import { StringEnum } from "@codevaani7838/pie-ai";
+import { type ExtensionAPI, getMarkdownTheme, withFileMutationQueue } from "@codevaani7838/pie-coding-agent";
+import { Container, Markdown, Spacer, Text } from "@codevaani7838/pie-tui";
 import { Type } from "typebox";
 import { type AgentConfig, type AgentScope, discoverAgents } from "./agents.ts";
 

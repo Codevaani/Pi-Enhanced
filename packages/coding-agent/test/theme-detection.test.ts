@@ -1,4 +1,4 @@
-import { type RgbColor, resetCapabilitiesCache, setCapabilities } from "@earendil-works/pie-tui";
+import { type RgbColor, resetCapabilitiesCache, setCapabilities } from "@codevaani7838/pie-tui";
 import { afterEach, describe, expect, it } from "vitest";
 import {
 	detectTerminalBackgroundFromEnv,

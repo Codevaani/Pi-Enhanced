@@ -42,8 +42,8 @@ import {
 	type Tool,
 	type ToolCall,
 	type ToolResultMessage,
-} from "@earendil-works/pie-ai";
-import type { ExtensionAPI } from "@earendil-works/pie-coding-agent";
+} from "@codevaani7838/pie-ai";
+import type { ExtensionAPI } from "@codevaani7838/pie-coding-agent";
 
 // =============================================================================
 // OAuth Implementation (copied from packages/ai/src/utils/oauth/anthropic.ts)

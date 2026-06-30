@@ -2,8 +2,8 @@
  * Shared utilities for compaction and branch summarization.
  */
 
-import type { AgentMessage } from "@earendil-works/pie-agent-core";
-import type { Message } from "@earendil-works/pie-ai";
+import type { AgentMessage } from "@codevaani7838/pie-agent-core";
+import type { Message } from "@codevaani7838/pie-ai";
 
 // ============================================================================
 // File Operation Tracking

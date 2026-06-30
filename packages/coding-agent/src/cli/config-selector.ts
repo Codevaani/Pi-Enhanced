@@ -2,7 +2,7 @@
  * TUI config selector for `pie config` command
  */
 
-import { ProcessTerminal, TUI } from "@earendil-works/pie-tui";
+import { ProcessTerminal, TUI } from "@codevaani7838/pie-tui";
 import type { ResolvedPaths } from "../core/package-manager.ts";
 import type { SettingsManager } from "../core/settings-manager.ts";
 import { ConfigSelectorComponent } from "../modes/interactive/components/config-selector.ts";

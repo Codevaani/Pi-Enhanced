@@ -2,8 +2,8 @@
  * List available models with optional fuzzy search
  */
 
-import type { Api, Model } from "@earendil-works/pie-ai";
-import { fuzzyFilter } from "@earendil-works/pie-tui";
+import type { Api, Model } from "@codevaani7838/pie-ai";
+import { fuzzyFilter } from "@codevaani7838/pie-tui";
 import chalk from "chalk";
 import { formatNoModelsAvailableMessage } from "../core/auth-guidance.ts";
 import type { ModelRegistry } from "../core/model-registry.ts";

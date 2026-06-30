@@ -7,7 +7,7 @@ import * as crypto from "node:crypto";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { AgentMessage } from "@earendil-works/pie-agent-core";
+import type { AgentMessage } from "@codevaani7838/pie-agent-core";
 import {
 	type AssistantMessage,
 	getProviders,
@@ -16,7 +16,7 @@ import {
 	type Model,
 	type OAuthProviderId,
 	type OAuthSelectPrompt,
-} from "@earendil-works/pie-ai";
+} from "@codevaani7838/pie-ai";
 import type {
 	AutocompleteItem,
 	AutocompleteProvider,
@@ -27,7 +27,7 @@ import type {
 	OverlayHandle,
 	OverlayOptions,
 	SlashCommand,
-} from "@earendil-works/pie-tui";
+} from "@codevaani7838/pie-tui";
 import {
 	CombinedAutocompleteProvider,
 	type Component,
@@ -47,7 +47,7 @@ import {
 	TUI,
 	truncateToWidth,
 	visibleWidth,
-} from "@earendil-works/pie-tui";
+} from "@codevaani7838/pie-tui";
 import chalk from "chalk";
 import { spawn, spawnSync } from "child_process";
 import {

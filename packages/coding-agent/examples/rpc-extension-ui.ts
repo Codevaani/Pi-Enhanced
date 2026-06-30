@@ -26,7 +26,7 @@ import {
 	ProcessTerminal,
 	SelectList,
 	TUI,
-} from "@earendil-works/pie-tui";
+} from "@codevaani7838/pie-tui";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

@@ -1,4 +1,4 @@
-import { type Component, truncateToWidth, visibleWidth } from "@earendil-works/pie-tui";
+import { type Component, truncateToWidth, visibleWidth } from "@codevaani7838/pie-tui";
 import { APP_NAME } from "../../../config.ts";
 import { theme } from "../theme/theme.ts";
 

@@ -5,7 +5,7 @@ import {
 	type TUI,
 	truncateToWidth,
 	visibleWidth,
-} from "@earendil-works/pie-tui";
+} from "@codevaani7838/pie-tui";
 import type { AppKeybinding, KeybindingsManager } from "../../../core/keybindings.ts";
 
 export interface StatusLineContent {

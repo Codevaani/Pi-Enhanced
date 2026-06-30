@@ -4,8 +4,8 @@
  * Shows how to select a specific model and thinking level.
  */
 
-import { getModel } from "@earendil-works/pie-ai";
-import { AuthStorage, createAgentSession, ModelRegistry } from "@earendil-works/pie-coding-agent";
+import { getModel } from "@codevaani7838/pie-ai";
+import { AuthStorage, createAgentSession, ModelRegistry } from "@codevaani7838/pie-coding-agent";
 
 // Set up auth storage and model registry
 const authStorage = AuthStorage.create();

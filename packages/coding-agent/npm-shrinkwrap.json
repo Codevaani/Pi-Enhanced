@@ -1,17 +1,17 @@
 {
-	"name": "@earendil-works/pie-coding-agent",
+	"name": "@codevaani7838/pie-coding-agent",
 	"version": "0.0.1",
 	"lockfileVersion": 3,
 	"requires": true,
 	"packages": {
 		"": {
-			"name": "@earendil-works/pie-coding-agent",
+			"name": "@codevaani7838/pie-coding-agent",
 			"version": "0.0.1",
 			"license": "MIT",
 			"dependencies": {
-				"@earendil-works/pie-agent-core": "^0.0.1",
-				"@earendil-works/pie-ai": "^0.0.1",
-				"@earendil-works/pie-tui": "^0.0.1",
+				"@codevaani7838/pie-agent-core": "^0.0.1",
+				"@codevaani7838/pie-ai": "^0.0.1",
+				"@codevaani7838/pie-tui": "^0.0.1",
 				"@silvia-odwyer/photon-node": "0.3.4",
 				"chalk": "5.6.2",
 				"cross-spawn": "7.0.6",
@@ -474,12 +474,12 @@
 				"node": ">=6.9.0"
 			}
 		},
-		"node_modules/@earendil-works/pie-agent-core": {
+		"node_modules/@codevaani7838/pie-agent-core": {
 			"version": "0.0.1",
-			"resolved": "https://registry.npmjs.org/@earendil-works/pie-agent-core/-/pie-agent-core-0.0.1.tgz",
+			"resolved": "https://registry.npmjs.org/@codevaani7838/pie-agent-core/-/pie-agent-core-0.0.1.tgz",
 			"license": "MIT",
 			"dependencies": {
-				"@earendil-works/pie-ai": "^0.0.1",
+				"@codevaani7838/pie-ai": "^0.0.1",
 				"ignore": "7.0.5",
 				"typebox": "1.1.38",
 				"yaml": "2.9.0"
@@ -488,9 +488,9 @@
 				"node": ">=22.19.0"
 			}
 		},
-		"node_modules/@earendil-works/pie-ai": {
+		"node_modules/@codevaani7838/pie-ai": {
 			"version": "0.0.1",
-			"resolved": "https://registry.npmjs.org/@earendil-works/pie-ai/-/pie-ai-0.0.1.tgz",
+			"resolved": "https://registry.npmjs.org/@codevaani7838/pie-ai/-/pie-ai-0.0.1.tgz",
 			"license": "MIT",
 			"dependencies": {
 				"@anthropic-ai/sdk": "0.91.1",
@@ -511,9 +511,9 @@
 				"node": ">=22.19.0"
 			}
 		},
-		"node_modules/@earendil-works/pie-tui": {
+		"node_modules/@codevaani7838/pie-tui": {
 			"version": "0.0.1",
-			"resolved": "https://registry.npmjs.org/@earendil-works/pie-tui/-/pie-tui-0.0.1.tgz",
+			"resolved": "https://registry.npmjs.org/@codevaani7838/pie-tui/-/pie-tui-0.0.1.tgz",
 			"license": "MIT",
 			"dependencies": {
 				"get-east-asian-width": "1.6.0",

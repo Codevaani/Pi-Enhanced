@@ -1,4 +1,4 @@
-import type { AgentState } from "@earendil-works/pie-agent-core";
+import type { AgentState } from "@codevaani7838/pie-agent-core";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { basename, join } from "path";
 import { APP_NAME, getExportTemplateDir } from "../../config.ts";
