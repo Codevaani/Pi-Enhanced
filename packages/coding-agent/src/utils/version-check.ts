@@ -1,7 +1,5 @@
 import { compare, valid } from "semver";
 
-const DEFAULT_VERSION_CHECK_TIMEOUT_MS = 10000;
-
 export interface LatestPiRelease {
 	version: string;
 	packageName?: string;
@@ -26,8 +24,8 @@ export function isNewerPackageVersion(candidateVersion: string, currentVersion: 
 }
 
 export async function getLatestPiRelease(
-	currentVersion: string,
-	options: { timeoutMs?: number } = {},
+	_currentVersion: string,
+	_options: { timeoutMs?: number } = {},
 ): Promise<LatestPiRelease | undefined> {
 	return undefined;
 }

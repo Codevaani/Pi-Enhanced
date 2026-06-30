@@ -38,7 +38,7 @@ export function getSelfUpdateUnavailableInstruction(_packageName: string): strin
 	return "";
 }
 
-export function getUpdateInstruction(packageName: string): string {
+export function getUpdateInstruction(_packageName: string): string {
 	return "";
 }
 
